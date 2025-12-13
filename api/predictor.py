@@ -31,15 +31,15 @@ class HousePricePredictor:
         else:
             models_dir = Path(models_dir)
         
-        # Load the best model (LightGBM tuned v3)
-        model_path = models_dir / "model_lightgbm_tuned_v3.pkl"
+        # Load the model
+        model_path = models_dir / "model.pkl"
         if not model_path.exists():
-            # Fallback to best_model_v3
-            model_path = models_dir / "best_model_v3.pkl"
+            # Fallback to versioned names
+            model_path = models_dir / "model_lightgbm_tuned_v3.pkl"
         
-        encoder_path = models_dir / "target_encoder_v3.pkl"
+        encoder_path = models_dir / "target_encoder.pkl"
         if not encoder_path.exists():
-            encoder_path = models_dir / "target_encoder_v2.pkl"
+            encoder_path = models_dir / "target_encoder_v3.pkl"
         
         # Load model
         if model_path.exists():
