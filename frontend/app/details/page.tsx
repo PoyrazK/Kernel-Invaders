@@ -24,7 +24,7 @@ export default function DetailsPage() {
 
   useEffect(() => {
     const storedResult = localStorage.getItem("valuationResult");
-    
+
     if (storedResult) {
       try {
         const parsed = JSON.parse(storedResult);
@@ -34,7 +34,7 @@ export default function DetailsPage() {
         console.error("Sonuç parse hatası:", error);
       }
     }
-    
+
     setIsLoading(false);
   }, []);
 
@@ -116,10 +116,13 @@ export default function DetailsPage() {
         <CardContent>
           <div className="grid sm:grid-cols-3 gap-6">
             <div className="text-center p-4 bg-zinc-50 rounded-2xl">
-              <p className="text-sm text-zinc-500 mb-1">Model Tahmini</p>
-              <p className="text-2xl font-bold text-zinc-900">
-                {formatCurrency(result.fairValue)}
+              <p className="text-sm text-zinc-500 mb-1">Yatırım Değerlendirmesi</p>
+              <p className="text-lg font-bold text-zinc-900">
+                {formatCurrency(result.fairValueMin || result.confidence?.lower || result.fairValue * 0.95)}
+                {" - "}
+                {formatCurrency(result.fairValueMax || result.confidence?.upper || result.fairValue * 1.05)}
               </p>
+              <p className="text-xs text-zinc-400 mt-1">±%5 aralık</p>
             </div>
             <div className="text-center p-4 bg-zinc-50 rounded-2xl">
               <p className="text-sm text-zinc-500 mb-1">İlan Fiyatı</p>
@@ -134,8 +137,8 @@ export default function DetailsPage() {
                   result.advice === "FIRSAT"
                     ? "success"
                     : result.advice === "PAHALI"
-                    ? "danger"
-                    : "warning"
+                      ? "danger"
+                      : "warning"
                 }
                 className="text-lg px-4 py-1"
               >
@@ -165,7 +168,7 @@ export default function DetailsPage() {
                 {/* Alt ve üst sınır çizgileri */}
                 <div className="absolute inset-y-0 left-0 w-1 bg-zinc-400" />
                 <div className="absolute inset-y-0 right-0 w-1 bg-zinc-400" />
-                
+
                 {/* Güven bandı */}
                 <div
                   className="absolute inset-y-2 bg-neon-blue/30 rounded-xl"
@@ -174,7 +177,7 @@ export default function DetailsPage() {
                     right: "10%",
                   }}
                 />
-                
+
                 {/* Nokta tahmin */}
                 <div
                   className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-neon-blue rounded-full border-2 border-white shadow-lg"
@@ -243,8 +246,8 @@ export default function DetailsPage() {
                     variable.weight === "Yüksek"
                       ? "success"
                       : variable.weight === "Orta"
-                      ? "warning"
-                      : "secondary"
+                        ? "warning"
+                        : "secondary"
                   }
                 >
                   {variable.weight} Etki
