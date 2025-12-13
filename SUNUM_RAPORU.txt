@@ -1,0 +1,147 @@
+========================================================================
+PROJE SUNUM VE TEKNİK RAPOR DOSYASI
+========================================================================
+
+TAKIM ADI: AI Wizards
+TAKIM ÜYELERİ:
+1. Poyraz
+2. 
+3. 
+
+------------------------------------------------------------------------
+1. PROJE ÖZETİ (Asansör Konuşması)
+------------------------------------------------------------------------
+İstanbul emlak piyasası için 2020 verilerini kullanarak yapay zeka tabanlı 
+"Adil Değer Tahminleyicisi" geliştirdik. Sistem, girilen ev özelliklerine 
+göre ideal fiyatı tahmin eder ve mevcut ilan fiyatı ile karşılaştırarak 
+kullanıcıya "Fırsat", "Normal" veya "Pahalı" şeklinde yatırım tavsiyesi 
+verir. Bu sayede yatırımcılar saniyeler içinde bilinçli değerleme yapabilir.
+
+------------------------------------------------------------------------
+2. KURULUM VE ÇALIŞTIRMA (How to Run)
+------------------------------------------------------------------------
+1. Gerekli kütüphaneleri yükleyin:
+   pip install -r requirements.txt
+
+2. Uygulamayı başlatın:
+   streamlit run app.py
+
+3. Tarayıcınızda http://localhost:8501 adresine gidin.
+
+NOT: Model önceden eğitilmiş ve 'models/' klasöründe hazır bulunmaktadır.
+
+------------------------------------------------------------------------
+3. VERİ ÖN İŞLEME YAKLAŞIMI (Data Engineering)
+------------------------------------------------------------------------
+A) Temizlenen Alanlar:
+   - 'Price' sütunundaki "TL", nokta ve virgüller temizlendi, sayısala çevrildi
+   - 'Number of rooms' "3+1" formatından numerik toplama dönüştürüldü
+   - 'Building Age' aralıkları (örn: 5-10) sayısal ortalamaya çevrildi
+
+B) Eklenen Yeni Özellikler (Feature Engineering):
+   - Room_Size_Ratio: m² / Oda Sayısı (oda başına düşen alan)
+   - Balcony_Bool, Elevator, Parking Lot, Security: 0/1 (var/yok) formatı
+
+C) Target Encoding:
+   - 'District' ve 'Neighborhood' gibi yüksek kardinaliteli kategorik değişkenler
+     için Target Encoding uygulandı (ortalama fiyat değerlerine dönüştürüldü)
+
+D) Outlier Temizliği:
+   - Fiyat kolonunda %1 alt ve %99 üst dilimdeki uç değerler eğitim setinden
+     çıkarılarak modelin kararlılığı artırıldı
+
+E) Seçilen Kritik Özellikler:
+   - Konum: District, Neighborhood
+   - Fiziksel: m² (Net), Oda Sayısı, Bina Yaşı, Kat Konumu, Banyo Sayısı
+   - Isıtma: Heating tipi
+   - Ekstralar: Balkon, Asansör, Otopark, Güvenlik
+
+------------------------------------------------------------------------
+4. MODEL MİMARİSİ
+------------------------------------------------------------------------
+A) Kullanılan Algoritma: LightGBM Regressor (Tuned)
+
+B) Hiperparametreler (Optimized):
+   - n_estimators: 700
+   - max_depth: -1 (sınırsız)
+   - learning_rate: 0.05
+   - num_leaves: 50
+   - subsample: 0.9
+   - colsample_bytree: 0.7
+   - min_child_samples: 10
+   - reg_alpha: 0.1
+   - reg_lambda: 2
+
+C) Neden LightGBM?
+   - Gradient Boosting tabanlı, hızlı ve yüksek performanslı
+   - Kategorik değişkenleri doğal olarak iyi işler
+   - Leaf-wise tree growth ile daha az overfitting
+   - XGBoost'tan daha hızlı eğitim süresi
+
+D) Denenen Diğer Modeller ve Karşılaştırma:
+   ┌───────────────────────┬──────────┬─────────────┐
+   │ Model                 │ R² Score │ RMSE (TL)   │
+   ├───────────────────────┼──────────┼─────────────┤
+   │ Random Forest (v1)    │ 0.7884   │ 333,769     │
+   │ Gradient Boosting     │ 0.8003   │ 324,248     │
+   │ XGBoost               │ 0.8080   │ 317,925     │
+   │ XGBoost Tuned         │ 0.8111   │ 315,339     │
+   │ LightGBM Tuned ⭐     │ 0.8115   │ 314,981     │
+   └───────────────────────┴──────────┴─────────────┘
+
+E) Elde Edilen Başarı Skoru (Test Set - Görülmemiş Veri):
+   - R-Square: 0.8115 (%81.15 varyans açıklama)
+   - RMSE: 314,981 TL
+   - MAPE: %22.15 (Ortalama Mutlak Yüzde Hata)
+
+------------------------------------------------------------------------
+5. YATIRIM KARAR MANTIĞI (Business Logic)
+------------------------------------------------------------------------
+Modelin tahmin ettiği "Adil Değer" ile kullanıcının girdiği "İlan Fiyatı" 
+arasındaki fark yüzdesel olarak hesaplanır:
+
+   Fark (%) = (Tahmin - İlan Fiyatı) / İlan Fiyatı × 100
+
+┌─────────────────────────────────────────────────────────────────────┐
+│ KARAR EŞİKLERİ:                                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│ 🎯 FIRSAT!      : Fark > +15%  (İlan fiyatı çok düşük)              │
+│ ✅ İYİ FİYAT    : +5% < Fark ≤ +15%                                 │
+│ ⚖️ NORMAL       : -5% ≤ Fark ≤ +5%                                  │
+│ ⚠️ BİRAZ PAHALI : -15% ≤ Fark < -5%                                 │
+│ ❌ PAHALI!      : Fark < -15% (İlan fiyatı çok yüksek)              │
+└─────────────────────────────────────────────────────────────────────┘
+
+Eşik Değerler Nasıl Belirlendi?
+- Model RMSE: ~315K TL (ortalama hata)
+- Ortalama Ev Fiyatı: ~700K TL
+- 315K / 700K ≈ %15 → güvenli karar bandı olarak %15 seçildi
+
+------------------------------------------------------------------------
+6. SİZİ DİĞERLERİNDEN AYIRAN ÖZELLİK (Unique Value)
+------------------------------------------------------------------------
+1. GÜÇLÜ MODEL: 7 farklı algoritma denendi, hyperparameter tuning yapıldı.
+   En iyi model seçildi (LightGBM R²=0.8115).
+
+2. TARGET ENCODING: Yüksek kardinaliteli kategorik değişkenler (326 mahalle)
+   için Target Encoding kullanarak bilgi kaybı önlendi.
+
+3. DETAYLI YATIRIM TAVSİYESİ: Sadece "Fırsat/Pahalı" değil, 5 farklı 
+   seviyede (Fırsat, İyi Fiyat, Normal, Biraz Pahalı, Pahalı) tavsiye.
+
+4. KULLANICI DOSTU ARAYÜZ: Modern, koyu temalı, animasyonlu Streamlit 
+   arayüzü ile anlık sonuç görselleştirmesi.
+
+5. GENELLEŞTİRME BAŞARISI: %20 ayrılmış "görülmemiş" test verisi üzerinde
+   R²=0.8115 ile overfitting olmadan iyi genelleme.
+
+------------------------------------------------------------------------
+7. GELECEK İYİLEŞTİRMELER
+------------------------------------------------------------------------
+- 2024-2025 verileri ile model güncellemesi
+- Enflasyon endeksi entegrasyonu
+- Harita görselleştirmesi (bölge bazlı fiyat ısı haritası)
+- Benzer evleri listeleme özelliği
+- API endpoint oluşturma (FastAPI)
+
+========================================================================
