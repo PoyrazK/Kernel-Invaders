@@ -194,7 +194,7 @@ export default function ResultPage() {
           <Card className="border-2 border-neon-blue/30 bg-neon-blue/5">
             <CardContent className="p-8 text-center space-y-4">
               <p className="text-sm font-semibold text-zinc-500 uppercase tracking-wide">
-                Model Tahmini Adil Değer Aralığı
+                Yatırım Değerlendirmesi
               </p>
               <div className="flex items-baseline justify-center gap-4">
                 <p className="text-4xl md:text-5xl font-bold text-zinc-900">

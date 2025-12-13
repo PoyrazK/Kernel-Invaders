@@ -78,7 +78,7 @@ export function ResultCards({ result }: ResultCardsProps) {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
               <Scale className="w-4 h-4 text-neon-blue" />
-              Model Tahmini
+              Yatırım Değerlendirmesi
             </CardTitle>
           </CardHeader>
           <CardContent>
