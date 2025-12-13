@@ -34,13 +34,13 @@ function AnimatedNumber({ value, format = "currency" }: { value: number; format?
     const duration = 2000;
     const startTime = Date.now();
     const endTime = startTime + duration;
-    
+
     const updateCounter = () => {
       const now = Date.now();
-      
+
       if (now >= endTime) {
-        element.textContent = format === "currency" 
-          ? formatCurrency(value) 
+        element.textContent = format === "currency"
+          ? formatCurrency(value)
           : formatPercent(value);
         return;
       }
@@ -48,7 +48,7 @@ function AnimatedNumber({ value, format = "currency" }: { value: number; format?
       const progress = (now - startTime) / duration;
       const easedProgress = 1 - Math.pow(1 - progress, 3); // Ease out cubic
       const currentValue = Math.floor(value * easedProgress);
-      
+
       element.textContent = format === "currency"
         ? formatCurrency(currentValue)
         : formatPercent(currentValue);
@@ -67,13 +67,13 @@ function AnimatedNumber({ value, format = "currency" }: { value: number; format?
  * Değerleme sonuçlarını görsel olarak sunar
  */
 export function ResultCards({ result }: ResultCardsProps) {
-  const { fairValue, listingPrice, diffPercent, advice } = result;
+  const { fairValue, fairValueMin, fairValueMax, listingPrice, diffPercent, advice } = result;
 
   return (
     <div className="space-y-6">
       {/* Üst Kartlar - 3'lü Grid */}
       <div className="grid md:grid-cols-3 gap-4">
-        {/* Adil Değer Kartı */}
+        {/* Adil Değer Kartı - Aralık gösterimi */}
         <Card className="border-2 border-neon-blue/30 bg-neon-blue/5 dark:bg-neon-blue/10 animate-in slide-in-from-bottom-4 duration-500">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
@@ -82,9 +82,17 @@ export function ResultCards({ result }: ResultCardsProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-1">
-              <AnimatedNumber value={fairValue} format="currency" />
-              <p className="text-sm text-muted-foreground">Adil Piyasa Değeri</p>
+            <div className="space-y-2">
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl font-bold text-foreground">
+                  {formatCurrency(fairValueMin)}
+                </p>
+                <span className="text-muted-foreground">-</span>
+                <p className="text-2xl font-bold text-foreground">
+                  {formatCurrency(fairValueMax)}
+                </p>
+              </div>
+              <p className="text-sm text-muted-foreground">Adil Piyasa Değeri (±%5 aralık)</p>
             </div>
           </CardContent>
         </Card>
@@ -112,8 +120,8 @@ export function ResultCards({ result }: ResultCardsProps) {
             diffPercent < 0
               ? "border-neon-green/30 bg-neon-green/5 dark:bg-neon-green/10"
               : diffPercent > 10
-              ? "border-neon-red/30 bg-neon-red/5 dark:bg-neon-red/10"
-              : "border-border bg-secondary"
+                ? "border-neon-red/30 bg-neon-red/5 dark:bg-neon-red/10"
+                : "border-border bg-secondary"
           )}
         >
           <CardHeader className="pb-2">
@@ -249,7 +257,7 @@ function getAdviceConfig(advice: InvestmentAdvice) {
  */
 function getAdviceDescription(advice: InvestmentAdvice, diffPercent: number): string {
   const absDiff = Math.abs(diffPercent).toFixed(1);
-  
+
   switch (advice) {
     case "FIRSAT":
       return `Bu konut, benzer özelliklerdeki emsallere göre %${absDiff} daha düşük fiyatlanmış. Yatırım için uygun görünüyor.`;

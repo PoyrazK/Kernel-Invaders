@@ -35,7 +35,7 @@ export default function ResultPage() {
   useEffect(() => {
     // localStorage'dan sonucu al
     const storedResult = localStorage.getItem("valuationResult");
-    
+
     if (storedResult) {
       try {
         const parsed = JSON.parse(storedResult);
@@ -46,7 +46,7 @@ export default function ResultPage() {
         console.error("Sonuç parse hatası:", error);
       }
     }
-    
+
     setIsLoading(false);
   }, []);
 
@@ -194,17 +194,20 @@ export default function ResultPage() {
           <Card className="border-2 border-neon-blue/30 bg-neon-blue/5">
             <CardContent className="p-8 text-center space-y-4">
               <p className="text-sm font-semibold text-zinc-500 uppercase tracking-wide">
-                Model Tahmini Adil Değer
+                Model Tahmini Adil Değer Aralığı
               </p>
-              <p className="text-5xl md:text-6xl font-bold text-zinc-900">
-                {formatCurrency(result.fairValue)}
-              </p>
-              {result.confidence && (
-                <p className="text-sm text-zinc-500">
-                  %90 Güven Aralığı: {formatCurrency(result.confidence.lower)} -{" "}
-                  {formatCurrency(result.confidence.upper)}
+              <div className="flex items-baseline justify-center gap-4">
+                <p className="text-4xl md:text-5xl font-bold text-zinc-900">
+                  {formatCurrency(result.fairValueMin || result.confidence?.lower || result.fairValue * 0.95)}
                 </p>
-              )}
+                <span className="text-2xl text-zinc-400">-</span>
+                <p className="text-4xl md:text-5xl font-bold text-zinc-900">
+                  {formatCurrency(result.fairValueMax || result.confidence?.upper || result.fairValue * 1.05)}
+                </p>
+              </div>
+              <p className="text-sm text-zinc-500">
+                ±%5 güven aralığı ile hesaplanmıştır
+              </p>
             </CardContent>
           </Card>
 
@@ -256,8 +259,8 @@ export default function ResultPage() {
                       result.diffPercent < 0
                         ? "success"
                         : result.diffPercent > 10
-                        ? "danger"
-                        : "warning"
+                          ? "danger"
+                          : "warning"
                     }
                   >
                     {result.diffPercent < 0 ? "Ucuz" : result.diffPercent > 10 ? "Pahalı" : "Normal"}

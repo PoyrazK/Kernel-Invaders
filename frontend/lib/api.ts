@@ -94,6 +94,8 @@ function parseRooms(rooms: string): number {
 function transformResponse(response: PredictResponse, formData: ValuationFormData): ValuationResult {
   return {
     fairValue: response.fair_value,
+    fairValueMin: response.fair_value_min,
+    fairValueMax: response.fair_value_max,
     listingPrice: formData.listingPrice,
     diffPercent: response.diff_percent,
     advice: response.advice,
@@ -154,6 +156,8 @@ function getMockValuation(formData: ValuationFormData): ValuationResult {
 
   return {
     fairValue,
+    fairValueMin: Math.round(fairValue * 0.95),  // -5%
+    fairValueMax: Math.round(fairValue * 1.05),  // +5%
     listingPrice: formData.listingPrice,
     diffPercent,
     advice,

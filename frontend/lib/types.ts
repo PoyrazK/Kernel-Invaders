@@ -45,6 +45,8 @@ export interface RegionStats {
 // API yanıtı tipi
 export interface PredictResponse {
   fair_value: number;
+  fair_value_min: number;  // -5%
+  fair_value_max: number;  // +5%
   advice: InvestmentAdvice;
   diff_percent: number;
   region_stats: RegionStats;
@@ -57,6 +59,8 @@ export interface PredictResponse {
 // Değerleme sonucu (frontend'de kullanılacak zenginleştirilmiş veri)
 export interface ValuationResult {
   fairValue: number;
+  fairValueMin: number;  // -5%
+  fairValueMax: number;  // +5%
   listingPrice: number;
   diffPercent: number;
   advice: InvestmentAdvice;

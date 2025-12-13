@@ -114,41 +114,51 @@ class HousePricePredictor:
         # Predict
         fair_value = float(self.model.predict(input_encoded)[0])
         
-        # Calculate diff percent
-        # Pozitif = model tahmini daha yüksek (fırsat)
-        # Negatif = ilan fiyatı daha yüksek (pahalı)
-        diff_percent = ((fair_value - request.price) / request.price) * 100
+        # ±5% Fiyat Aralığı
+        RANGE_PERCENT = 0.05
+        fair_value_min = fair_value * (1 - RANGE_PERCENT)
+        fair_value_max = fair_value * (1 + RANGE_PERCENT)
         
-        # Determine advice
-        advice = self._get_advice(diff_percent)
+        # Determine advice based on range
+        # FIRSAT: İlan fiyatı < Alt sınır
+        # NORMAL: Alt sınır <= İlan fiyatı <= Üst sınır
+        # PAHALI: İlan fiyatı > Üst sınır
+        advice = self._get_advice_with_range(request.price, fair_value_min, fair_value_max)
+        
+        # Calculate diff percent (ilan vs tahmin ortası)
+        diff_percent = ((fair_value - request.price) / request.price) * 100
         
         # Get region stats
         region_stats = self._get_region_stats(request.district, request.location)
         
-        # Confidence interval (±10% based on model RMSE)
-        confidence = {
-            "lower": fair_value * 0.9,
-            "upper": fair_value * 1.1
-        }
-        
         return {
             "fair_value": round(fair_value, 0),
+            "fair_value_min": round(fair_value_min, 0),
+            "fair_value_max": round(fair_value_max, 0),
             "advice": advice,
             "diff_percent": round(diff_percent, 2),
             "region_stats": region_stats,
-            "confidence": confidence
+            "confidence": {
+                "lower": round(fair_value_min, 0),
+                "upper": round(fair_value_max, 0)
+            }
         }
     
+    def _get_advice_with_range(self, listing_price: float, fair_min: float, fair_max: float) -> str:
+        """Fiyat aralığına göre yatırım tavsiyesi"""
+        if listing_price < fair_min:
+            return "FIRSAT"  # İlan fiyatı alt sınırın altında
+        elif listing_price > fair_max:
+            return "PAHALI"  # İlan fiyatı üst sınırın üstünde
+        else:
+            return "NORMAL"  # İlan fiyatı aralık içinde
+    
     def _get_advice(self, diff_percent: float) -> str:
-        """Fiyat farkına göre yatırım tavsiyesi"""
-        if diff_percent > 15:
+        """Fiyat farkına göre yatırım tavsiyesi (eski mantık, backup)"""
+        if diff_percent > 5:
             return "FIRSAT"
-        elif diff_percent > 5:
-            return "FIRSAT"  # İyi fiyat da fırsat sayılır
         elif diff_percent > -5:
             return "NORMAL"
-        elif diff_percent > -15:
-            return "PAHALI"
         else:
             return "PAHALI"
     

@@ -44,7 +44,9 @@ InvestmentAdvice = Literal["FIRSAT", "NORMAL", "PAHALI"]
 
 class PredictResponse(BaseModel):
     """Tahmin sonucu yanıtı"""
-    fair_value: float = Field(..., description="Model tahmini (TL)")
+    fair_value: float = Field(..., description="Model tahmini orta nokta (TL)")
+    fair_value_min: float = Field(..., description="Tahmin alt sınırı (TL) - -%5")
+    fair_value_max: float = Field(..., description="Tahmin üst sınırı (TL) - +%5")
     advice: InvestmentAdvice = Field(..., description="Yatırım tavsiyesi")
     diff_percent: float = Field(..., description="Fiyat farkı yüzdesi")
     region_stats: RegionStats = Field(..., description="Bölge istatistikleri")
