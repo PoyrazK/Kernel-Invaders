@@ -22,7 +22,7 @@ Kernel-Invaiders/
 ├── data/                  # Temizlenmiş veri
 │   └── processed_data.pkl
 ├── models/                # Eğitilmiş modeller
-│   ├── model.pkl          # LightGBM Regressor (R²: 0.62)
+│   ├── model.pkl          # LightGBM Regressor (R²: 0.8115)
 │   └── target_encoder.pkl # Target Encoder
 ├── notebooks/             # Eğitim notebook'ları
 │   └── model_training.ipynb
@@ -68,10 +68,21 @@ npm run dev
 
 | Metrik | Değer |
 |--------|-------|
-| **Model** | LightGBM Regressor |
-| **R² Score** | 0.62 |
-| **Test RMSE** | ~275K TL |
+| **Model** | LightGBM Regressor (Tuned) |
+| **R² Score** | 0.8115 (%81.15 varyans açıklama) |
+| **RMSE** | 314,981 TL |
+| **MAPE** | %22.15 (Ortalama Mutlak Yüzde Hata) |
 | **Eğitim Verisi** | 23,668 kayıt |
+
+### Denenen Modeller Karşılaştırması
+
+| Model | R² Score | RMSE (TL) |
+|-------|----------|-----------|
+| Random Forest (v1) | 0.7884 | 333,769 |
+| Gradient Boosting | 0.8003 | 324,248 |
+| XGBoost | 0.8080 | 317,925 |
+| XGBoost Tuned | 0.8111 | 315,339 |
+| **LightGBM Tuned ⭐** | **0.8115** | **314,981** |
 
 ### Kullanılan Özellikler
 - İlçe, Mahalle (Target Encoded)
