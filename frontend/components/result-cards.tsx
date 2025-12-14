@@ -9,12 +9,9 @@ import {
   TrendingUp,
   TrendingDown,
   Minus,
-  CheckCircle2,
-  AlertTriangle,
-  XCircle,
   Banknote,
-  Scale,
-  Percent,
+  ArrowRight,
+  Target,
 } from "lucide-react";
 
 interface ResultCardsProps {
@@ -24,8 +21,8 @@ interface ResultCardsProps {
 /**
  * Animated Number Component
  */
-function AnimatedNumber({ value, format = "currency" }: { value: number; format?: "currency" | "percent" }) {
-  const ref = useRef<HTMLParagraphElement>(null);
+function AnimatedNumber({ value, format = "currency", className }: { value: number; format?: "currency" | "percent"; className?: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const element = ref.current;
@@ -59,7 +56,7 @@ function AnimatedNumber({ value, format = "currency" }: { value: number; format?
     updateCounter();
   }, [value, format]);
 
-  return <p ref={ref} className="text-3xl font-bold text-foreground">0</p>;
+  return <span ref={ref} className={cn("font-bold", className)}>0</span>;
 }
 
 /**
@@ -68,203 +65,204 @@ function AnimatedNumber({ value, format = "currency" }: { value: number; format?
  */
 export function ResultCards({ result }: ResultCardsProps) {
   const { fairValue, fairValueMin, fairValueMax, listingPrice, diffPercent, advice } = result;
+  
+  // Determine colors based on advice
+  const isOpportunity = advice === "FIRSAT";
+  const isExpensive = advice === "PAHALI";
+  
+  const accentColor = isOpportunity 
+    ? "emerald" 
+    : isExpensive 
+      ? "red" 
+      : "amber";
+  
+  const gradientClasses = isOpportunity
+    ? "from-emerald-500 to-emerald-600"
+    : isExpensive
+      ? "from-red-500 to-red-600"
+      : "from-amber-500 to-amber-600";
 
   return (
     <div className="space-y-6">
-      {/* Üst Kartlar - 3'lü Grid */}
-      <div className="grid md:grid-cols-3 gap-4">
-        {/* Adil Değer Kartı - Aralık gösterimi */}
-        <Card className="border-2 border-neon-blue/30 bg-neon-blue/5 dark:bg-neon-blue/10 animate-in slide-in-from-bottom-4 duration-500">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
-              <Scale className="w-4 h-4 text-neon-blue" />
-              Yatırım Değerlendirmesi
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex items-baseline gap-2">
-                <p className="text-2xl font-bold text-foreground">
-                  {formatCurrency(fairValueMin)}
-                </p>
-                <span className="text-muted-foreground">-</span>
-                <p className="text-2xl font-bold text-foreground">
-                  {formatCurrency(fairValueMax)}
-                </p>
-              </div>
-              <p className="text-sm text-muted-foreground">Adil Piyasa Değeri (±%5 aralık)</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* İlan Fiyatı Kartı */}
-        <Card className="border-2 border-neon-yellow/30 bg-neon-yellow/5 dark:bg-neon-yellow/10 animate-in slide-in-from-bottom-4 duration-500 delay-100">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
-              <Banknote className="w-4 h-4 text-neon-yellow" />
-              İlan Fiyatı
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-1">
-              <AnimatedNumber value={listingPrice} format="currency" />
-              <p className="text-sm text-muted-foreground">Satıcı Talebi</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Fark Kartı */}
-        <Card
-          className={cn(
-            "border-2 animate-in slide-in-from-bottom-4 duration-500 delay-200",
-            diffPercent < 0
-              ? "border-neon-green/30 bg-neon-green/5 dark:bg-neon-green/10"
-              : diffPercent > 10
-                ? "border-neon-red/30 bg-neon-red/5 dark:bg-neon-red/10"
-                : "border-border bg-secondary"
-          )}
-        >
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
-              <Percent className="w-4 h-4" />
-              Fark
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-1">
+      {/* Ana Karşılaştırma Kartı */}
+      <Card className="border-2 border-border overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
+        <CardContent className="p-0">
+          {/* Üst Bölüm - Fiyat Karşılaştırması */}
+          <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
+            {/* Adil Değer */}
+            <div className="p-6 space-y-3">
               <div className="flex items-center gap-2">
-                {diffPercent < 0 ? (
-                  <TrendingDown className="w-6 h-6 text-neon-green" />
-                ) : diffPercent > 0 ? (
-                  <TrendingUp className="w-6 h-6 text-neon-red" />
-                ) : (
-                  <Minus className="w-6 h-6 text-muted-foreground" />
-                )}
-                <AnimatedNumber value={diffPercent} format="percent" />
+                <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                  <Target className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                </div>
+                <span className="text-sm font-medium text-muted-foreground">Adil Piyasa Değeri</span>
               </div>
-              <p className="text-sm text-muted-foreground">
-                {diffPercent < 0 ? "Değerin altında" : diffPercent > 0 ? "Değerin üstünde" : "Değere eşit"}
+              <div className="space-y-1">
+                <p className="text-3xl md:text-4xl font-bold text-foreground">
+                  {formatCurrency(fairValue)}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {formatCurrency(fairValueMin)} - {formatCurrency(fairValueMax)} aralığında
+                </p>
+              </div>
+            </div>
+            
+            {/* İlan Fiyatı */}
+            <div className="p-6 space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                  <Banknote className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                </div>
+                <span className="text-sm font-medium text-muted-foreground">İlan Fiyatı</span>
+              </div>
+              <div className="space-y-1">
+                <p className="text-3xl md:text-4xl font-bold text-foreground">
+                  <AnimatedNumber value={listingPrice} format="currency" />
+                </p>
+                <p className="text-sm text-muted-foreground">Satıcının talep ettiği fiyat</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Alt Bölüm - Fark Gösterimi */}
+          <div className={cn(
+            "p-6 bg-gradient-to-r",
+            gradientClasses
+          )}>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  {isOpportunity ? (
+                    <TrendingDown className="w-6 h-6 text-white" />
+                  ) : isExpensive ? (
+                    <TrendingUp className="w-6 h-6 text-white" />
+                  ) : (
+                    <Minus className="w-6 h-6 text-white" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-white/80 text-sm font-medium">Fiyat Farkı</p>
+                  <p className="text-white text-2xl md:text-3xl font-bold">
+                    {diffPercent > 0 ? "+" : ""}{Math.abs(diffPercent).toFixed(1)}%
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <div className="h-px flex-1 md:w-16 bg-white/30" />
+                <Badge 
+                  className={cn(
+                    "text-base px-4 py-2 font-bold",
+                    isOpportunity 
+                      ? "bg-white text-emerald-600" 
+                      : isExpensive 
+                        ? "bg-white text-red-600"
+                        : "bg-white text-amber-600"
+                  )}
+                >
+                  {advice}
+                </Badge>
+              </div>
+            </div>
+            
+            {/* Açıklama */}
+            <div className="mt-4 pt-4 border-t border-white/20">
+              <p className="text-white/90 text-sm md:text-base">
+                {isOpportunity 
+                  ? `Bu konut, piyasa değerinin %${Math.abs(diffPercent).toFixed(1)} altında fiyatlanmış. Yatırım için değerlendirin!`
+                  : isExpensive
+                    ? `Bu konut, piyasa değerinin %${Math.abs(diffPercent).toFixed(1)} üzerinde fiyatlanmış. Pazarlık yapmanız önerilir.`
+                    : "Bu konut, piyasa değerine yakın fiyatlanmış. Detaylı inceleme yapın."
+                }
               </p>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Yatırım Tavsiyesi Kartı */}
-      <AdviceCard advice={advice} diffPercent={diffPercent} />
+      {/* Görsel Karşılaştırma Barı */}
+      <Card className="border-2 border-border animate-in slide-in-from-bottom-4 duration-500 delay-100">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold text-muted-foreground">
+            Görsel Karşılaştırma
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Adil Değer Bar */}
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Adil Değer</span>
+              <span className="font-semibold">{formatCurrency(fairValue)}</span>
+            </div>
+            <div className="h-3 bg-muted rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full transition-all duration-1000"
+                style={{ width: `${Math.min(100, (fairValue / Math.max(fairValue, listingPrice)) * 100)}%` }}
+              />
+            </div>
+          </div>
+          
+          {/* İlan Fiyatı Bar */}
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">İlan Fiyatı</span>
+              <span className="font-semibold">{formatCurrency(listingPrice)}</span>
+            </div>
+            <div className="h-3 bg-muted rounded-full overflow-hidden">
+              <div 
+                className={cn(
+                  "h-full rounded-full transition-all duration-1000",
+                  isOpportunity 
+                    ? "bg-gradient-to-r from-emerald-400 to-emerald-500"
+                    : isExpensive
+                      ? "bg-gradient-to-r from-red-400 to-red-500"
+                      : "bg-gradient-to-r from-amber-400 to-amber-500"
+                )}
+                style={{ width: `${Math.min(100, (listingPrice / Math.max(fairValue, listingPrice)) * 100)}%` }}
+              />
+            </div>
+          </div>
+          
+          {/* Fark Göstergesi */}
+          <div className={cn(
+            "flex items-center justify-center gap-2 py-3 rounded-xl",
+            isOpportunity 
+              ? "bg-emerald-50 dark:bg-emerald-950/30"
+              : isExpensive
+                ? "bg-red-50 dark:bg-red-950/30"
+                : "bg-amber-50 dark:bg-amber-950/30"
+          )}>
+            <span className={cn(
+              "text-sm font-medium",
+              isOpportunity 
+                ? "text-emerald-700 dark:text-emerald-300"
+                : isExpensive
+                  ? "text-red-700 dark:text-red-300"
+                  : "text-amber-700 dark:text-amber-300"
+            )}>
+              {formatCurrency(Math.abs(listingPrice - fairValue))} fark
+            </span>
+            <ArrowRight className={cn(
+              "w-4 h-4",
+              isOpportunity 
+                ? "text-emerald-500 rotate-[-45deg]"
+                : isExpensive
+                  ? "text-red-500 rotate-45"
+                  : "text-amber-500"
+            )} />
+            <span className={cn(
+              "text-sm font-bold",
+              isOpportunity 
+                ? "text-emerald-700 dark:text-emerald-300"
+                : isExpensive
+                  ? "text-red-700 dark:text-red-300"
+                  : "text-amber-700 dark:text-amber-300"
+            )}>
+              {isOpportunity ? "Tasarruf" : isExpensive ? "Fazla Ödeme" : "Makul"}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
-
-/**
- * Yatırım tavsiyesi kartı
- */
-interface AdviceCardProps {
-  advice: InvestmentAdvice;
-  diffPercent: number;
-}
-
-function AdviceCard({ advice, diffPercent }: AdviceCardProps) {
-  const config = getAdviceConfig(advice);
-
-  return (
-    <Card
-      className={cn(
-        "border-4 overflow-hidden transition-all animate-in slide-in-from-bottom-8 duration-700 delay-300",
-        config.borderColor,
-        config.bgColor
-      )}
-    >
-      <CardContent className="p-8">
-        <div className="flex flex-col md:flex-row md:items-center gap-6">
-          {/* İkon */}
-          <div
-            className={cn(
-              "w-20 h-20 rounded-3xl flex items-center justify-center shrink-0 animate-in zoom-in-50 duration-500 delay-500",
-              config.iconBg,
-              config.glowClass
-            )}
-          >
-            <config.icon className={cn("w-10 h-10", config.iconColor)} />
-          </div>
-
-          {/* İçerik */}
-          <div className="space-y-3 flex-1">
-            <div className="flex items-center gap-3">
-              <Badge
-                variant={config.badgeVariant}
-                className="text-lg px-4 py-1"
-              >
-                {advice}
-              </Badge>
-            </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-              {config.title}
-            </h2>
-            <p className="text-muted-foreground text-lg">
-              {getAdviceDescription(advice, diffPercent)}
-            </p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-/**
- * Tavsiye tipine göre konfigürasyon
- */
-function getAdviceConfig(advice: InvestmentAdvice) {
-  switch (advice) {
-    case "FIRSAT":
-      return {
-        icon: CheckCircle2,
-        borderColor: "border-neon-green",
-        bgColor: "bg-neon-green/10",
-        iconBg: "bg-neon-green",
-        iconColor: "text-zinc-900",
-        glowClass: "neon-green-glow",
-        badgeVariant: "success" as const,
-        title: "Bu Konut Değerli Bir Fırsat!",
-      };
-    case "NORMAL":
-      return {
-        icon: AlertTriangle,
-        borderColor: "border-neon-yellow",
-        bgColor: "bg-neon-yellow/10",
-        iconBg: "bg-neon-yellow",
-        iconColor: "text-zinc-900",
-        glowClass: "neon-yellow-glow",
-        badgeVariant: "warning" as const,
-        title: "Fiyat Piyasa Değerine Yakın",
-      };
-    case "PAHALI":
-      return {
-        icon: XCircle,
-        borderColor: "border-neon-red",
-        bgColor: "bg-neon-red/10",
-        iconBg: "bg-neon-red",
-        iconColor: "text-white",
-        glowClass: "neon-red-glow",
-        badgeVariant: "danger" as const,
-        title: "Bu Fiyat Piyasa Değerinin Üstünde",
-      };
-  }
-}
-
-/**
- * Tavsiye açıklama metni
- */
-function getAdviceDescription(advice: InvestmentAdvice, diffPercent: number): string {
-  const absDiff = Math.abs(diffPercent).toFixed(1);
-
-  switch (advice) {
-    case "FIRSAT":
-      return `Bu konut, benzer özelliklerdeki emsallere göre %${absDiff} daha düşük fiyatlanmış. Yatırım için uygun görünüyor.`;
-    case "NORMAL":
-      return `Bu konut, piyasa değerine yakın fiyatlanmış. Detaylı inceleme ve pazarlık ile makul bir alım yapılabilir.`;
-    case "PAHALI":
-      return `Bu konut, benzer özelliklerdeki emsallere göre %${absDiff} daha pahalı. Satıcıyla pazarlık yapmanız önerilir.`;
-  }
-}
-

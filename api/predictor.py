@@ -126,7 +126,9 @@ class HousePricePredictor:
         advice = self._get_advice_with_range(request.price, fair_value_min, fair_value_max)
         
         # Calculate diff percent (ilan vs tahmin ortası)
-        diff_percent = ((fair_value - request.price) / request.price) * 100
+        # Pozitif = ilan fiyatı adil değerden yüksek (pahalı)
+        # Negatif = ilan fiyatı adil değerden düşük (fırsat)
+        diff_percent = ((request.price - fair_value) / fair_value) * 100
         
         # Get region stats
         region_stats = self._get_region_stats(request.district, request.location)
@@ -197,6 +199,103 @@ class HousePricePredictor:
             "median": float(filtered['Price'].median()),
             "count": int(len(filtered))
         }
+    
+    def get_opportunities(self, district: str, neighborhood: str = None, 
+                          target_m2: float = None, target_rooms: int = None,
+                          limit: int = 10) -> list:
+        """Benzer özelliklerde fırsat evleri bul"""
+        if self.training_data is None or not self.model_loaded:
+            return []
+        
+        df = self.training_data.copy()
+        
+        # 1. İlçe filtresi - önce aynı ilçe, yoksa komşu ilçeler
+        district_mask = (df['District'] == district)
+        if district_mask.sum() < 20:
+            # Komşu ilçeleri de dahil et (tüm veriden)
+            district_mask = pd.Series([True] * len(df))
+        
+        df_filtered = df[district_mask].copy()
+        
+        # 2. Mahalle filtresi (opsiyonel, gevşek)
+        if neighborhood and (df_filtered['Neighborhood'] == neighborhood).sum() >= 5:
+            # Aynı mahallede yeterli veri varsa öncelik ver
+            neighborhood_match = (df_filtered['Neighborhood'] == neighborhood)
+            df_neighborhood = df_filtered[neighborhood_match]
+            if len(df_neighborhood) >= 5:
+                df_filtered = df_neighborhood
+        
+        # 3. m² filtresi (±30% tolerans)
+        if target_m2 and 'm² (Net)' in df_filtered.columns:
+            m2_min = target_m2 * 0.7
+            m2_max = target_m2 * 1.3
+            m2_mask = (df_filtered['m² (Net)'] >= m2_min) & (df_filtered['m² (Net)'] <= m2_max)
+            if m2_mask.sum() >= 10:
+                df_filtered = df_filtered[m2_mask]
+        
+        # 4. Oda sayısı filtresi (±1 tolerans)
+        if target_rooms and 'Rooms_Num' in df_filtered.columns:
+            rooms_mask = (df_filtered['Rooms_Num'] >= target_rooms - 1) & \
+                        (df_filtered['Rooms_Num'] <= target_rooms + 1)
+            if rooms_mask.sum() >= 10:
+                df_filtered = df_filtered[rooms_mask]
+        
+        # 5. Her ev için tahmin yap ve fark hesapla
+        opportunities = []
+        
+        for idx, row in df_filtered.iterrows():
+            try:
+                # Basit tahmin için input hazırla
+                floor_loc = self._get_floor_location(
+                    int(row.get('Floor', 3)), 
+                    int(row.get('Number of floors', 10))
+                )
+                
+                input_data = {
+                    'District': [row['District']],
+                    'Neighborhood': [row['Neighborhood']],
+                    'm² (Net)': [row['m² (Net)']],
+                    'Rooms_Num': [row['Rooms_Num']],
+                    'Age_Num': [row.get('Age_Num', 5)],
+                    'Floor location': [floor_loc],
+                    'Heating': [row.get('Heating', 'Kombi')],
+                    'Number of bathrooms': [row.get('Number of bathrooms', 1)],
+                    'Number of floors': [row.get('Number of floors', 10)],
+                    'Balcony_Bool': [row.get('Balcony_Bool', 1)],
+                    'Elevator': [row.get('Elevator', 1)],
+                    'Parking Lot': [row.get('Parking Lot', 0)],
+                    'Security': [row.get('Security', 0)],
+                    'Room_Size_Ratio': [row['m² (Net)'] / max(row['Rooms_Num'], 1)]
+                }
+                
+                input_df = pd.DataFrame(input_data)
+                input_encoded = self.encoder.transform(input_df)
+                fair_value = float(self.model.predict(input_encoded)[0])
+                
+                actual_price = float(row['Price'])
+                diff_percent = ((actual_price - fair_value) / fair_value) * 100
+                
+                # Sadece fırsatları al (negatif fark = değerinin altında)
+                if diff_percent < -5:  # En az %5 indirimli olanlar
+                    opportunities.append({
+                        'district': row['District'],
+                        'neighborhood': row['Neighborhood'],
+                        'm2': float(row['m² (Net)']),
+                        'rooms': int(row['Rooms_Num']),
+                        'price': round(actual_price / 1000) * 1000,  # 1000'e yuvarla
+                        'fair_value': round(fair_value / 1000) * 1000,
+                        'diff_percent': round(diff_percent, 1),
+                        'building_age': int(row.get('Age_Num', 0)) if pd.notna(row.get('Age_Num')) else None,
+                        'floor': int(row.get('Floor', 0)) if pd.notna(row.get('Floor')) else None
+                    })
+            except Exception as e:
+                # Skip problematic rows
+                continue
+        
+        # En iyi fırsatları sırala (en düşük diff_percent = en iyi fırsat)
+        opportunities.sort(key=lambda x: x['diff_percent'])
+        
+        return opportunities[:limit]
 
 
 # Singleton instance

@@ -1,174 +1,273 @@
 "use client";
 
 import { PageContainer } from "@/components/layout/page-container";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  User,
-  Mail,
-  Bell,
-  Shield,
-  HelpCircle,
-  LogOut,
-  ChevronRight,
-  Crown,
-  Target,
-  TrendingUp,
+  Users,
+  Heart,
+  Code,
+  Cpu,
+  GraduationCap,
+  MapPin,
+  Github,
+  Globe,
+  Sparkles,
 } from "lucide-react";
+import Image from "next/image";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+import logo from "@/assets/logo.png";
+import logoDark from "@/assets/logo2.png";
 
 /**
- * Profil Sayfası
- * Kullanıcı bilgileri ve ayarlar
+ * Hakkımızda Sayfası
+ * Takım ve proje bilgileri
  */
 
-// Mock kullanıcı verisi
-const mockUser = {
-  name: "Ahmet Yılmaz",
-  email: "ahmet@example.com",
-  plan: "Ücretsiz",
-  analysisCount: 3,
-  analysisLimit: 5,
-};
-
-// Profil menü öğeleri
-const menuItems = [
-  { icon: Bell, label: "Bildirimler", description: "Bildirim tercihlerinizi yönetin" },
-  { icon: Shield, label: "Gizlilik", description: "Gizlilik ayarlarınız" },
-  { icon: HelpCircle, label: "Yardım & Destek", description: "SSS ve iletişim" },
+// Takım üyeleri
+const teamMembers = [
+  {
+    name: "Bahadır Koşapınar",
+    role: "Takım Lideri & Full Stack Developer",
+    avatar: "BK",
+    color: "bg-blue-500",
+  },
+  {
+    name: "Ravan Aliyev",
+    role: "Full Stack Developer",
+    avatar: "RA",
+    color: "bg-emerald-500",
+  },
+  {
+    name: "Muhammet Türker Akarsu",
+    role: "Data Scientist & ML Engineer",
+    avatar: "MA",
+    color: "bg-purple-500",
+  },
+  {
+    name: "Hüseyin Poyraz Küçükarslan",
+    role: "Backend Developer",
+    avatar: "PK",
+    color: "bg-orange-500",
+  },
 ];
 
-export default function ProfilePage() {
-  const progressPercent = (mockUser.analysisCount / mockUser.analysisLimit) * 100;
+// Neden Metrekare?
+const whyMetrekare = [
+  {
+    title: "23.000+ Gerçek Veri",
+    description:
+      "Modelimiz İstanbul'daki 23.000'den fazla gerçek emlak ilanı verisiyle eğitildi. Sahte veya tahmini veri yok, sadece piyasadan toplanan güncel veriler.",
+  },
+  {
+    title: "LightGBM Makine Öğrenmesi",
+    description:
+      "Gradient boosting tabanlı LightGBM algoritması kullanıyoruz. Bu model, karmaşık fiyat ilişkilerini yakalayarak %92+ doğruluk oranı sağlıyor.",
+  },
+  {
+    title: "Bölgesel Fiyat Analizi",
+    description:
+      "Sadece genel tahmin değil, ilçe ve mahalle bazında ortalama fiyatları, m² değerlerini ve piyasa trendlerini de görüyorsunuz.",
+  },
+  {
+    title: "Anlık Sonuç",
+    description:
+      "Emlakçıya gitmenize gerek yok. 3 adımda, saniyeler içinde evinizin adil piyasa değerini öğrenin ve fırsat mı pahalı mı hemen görün.",
+  },
+];
+
+// Teknolojiler
+const technologies = [
+  { name: "Next.js", category: "Frontend" },
+  { name: "React", category: "Frontend" },
+  { name: "Tailwind CSS", category: "Frontend" },
+  { name: "TypeScript", category: "Frontend" },
+  { name: "FastAPI", category: "Backend" },
+  { name: "Python", category: "Backend" },
+  { name: "LightGBM", category: "ML" },
+  { name: "Pandas", category: "ML" },
+];
+
+export default function AboutPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const currentLogo = mounted && resolvedTheme === "dark" ? logoDark : logo;
 
   return (
-    <PageContainer className="space-y-6">
-      {/* Kullanıcı Kartı */}
-      <Card className="border-2 border-zinc-100 overflow-hidden">
-        <div className="h-20 bg-zinc-900" />
-        <CardContent className="pt-0 pb-6 px-6">
-          <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-10">
-            {/* Avatar */}
-            <div className="w-20 h-20 bg-neon-blue rounded-2xl flex items-center justify-center border-4 border-white shadow-lg">
-              <User className="w-10 h-10 text-zinc-900" />
-            </div>
-
-            {/* Kullanıcı Bilgileri */}
-            <div className="flex-1 space-y-1 pb-2">
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-zinc-900">
-                  {mockUser.name}
-                </h2>
-                <Badge variant="secondary" className="text-xs">
-                  {mockUser.plan}
-                </Badge>
-              </div>
-              <p className="text-zinc-500 flex items-center gap-1">
-                <Mail className="w-4 h-4" />
-                {mockUser.email}
-              </p>
-            </div>
-
-            {/* Düzenle Butonu */}
-            <Button variant="outline" size="sm">
-              Profili Düzenle
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Kullanım İstatistikleri */}
-      <Card className="border-2 border-zinc-100">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Target className="w-5 h-5 text-neon-blue" />
-            Kullanım
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-zinc-600">Bu ay yapılan analizler</span>
-              <span className="font-semibold text-zinc-900">
-                {mockUser.analysisCount} / {mockUser.analysisLimit}
-              </span>
-            </div>
-            <div className="h-3 bg-zinc-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-neon-blue rounded-full transition-all duration-500"
-                style={{ width: `${progressPercent}%` }}
+    <PageContainer className="space-y-8 pt-4">
+      {/* Hero Bölümü */}
+      <Card className="border-2 border-zinc-200 dark:border-zinc-800 overflow-hidden">
+        <CardContent className="pt-10 pb-8 px-6">
+          <div className="flex flex-col items-center text-center">
+            {/* Logo */}
+            <div className="w-28 h-28 bg-zinc-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center shadow-lg mb-6">
+              <Image 
+                src={currentLogo}
+                alt="Metrekare Logo" 
+                width={72} 
+                height={72}
+                className="rounded-xl"
               />
             </div>
-          </div>
 
-          <div className="p-4 bg-zinc-50 rounded-2xl space-y-3">
-            <div className="flex items-center gap-2">
-              <Crown className="w-5 h-5 text-neon-yellow" />
-              <span className="font-semibold text-zinc-900">Pro'ya Yükseltin</span>
-            </div>
-            <p className="text-sm text-zinc-600">
-              Sınırsız değerleme, detaylı raporlar ve öncelikli destek
+            <h1 className="text-3xl font-bold text-foreground mb-3">
+              Metrekare
+            </h1>
+            <p className="text-muted-foreground text-sm max-w-md leading-relaxed">
+              Yapay zeka destekli emlak değerleme platformu. 
+              İstanbul&apos;daki ev fiyatlarını doğru tahmin edin, fırsatları keşfedin.
             </p>
-            <Button variant="neon-yellow" size="sm" className="w-full">
-              Planları İncele
-            </Button>
+            
+            <div className="flex items-center gap-3 mt-6">
+              <Badge variant="secondary" className="text-xs px-3 py-1">
+                <Sparkles className="w-3 h-3 mr-1.5" />
+                AI Powered
+              </Badge>
+              <Badge variant="outline" className="text-xs px-3 py-1">
+                <MapPin className="w-3 h-3 mr-1.5" />
+                İstanbul
+              </Badge>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* İstatistik Kartları */}
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="border-2 border-zinc-100">
-          <CardContent className="p-4 text-center">
-            <TrendingUp className="w-8 h-8 text-neon-green mx-auto mb-2" />
-            <p className="text-2xl font-bold text-zinc-900">12</p>
-            <p className="text-xs text-zinc-500">Toplam Analiz</p>
-          </CardContent>
-        </Card>
-        <Card className="border-2 border-zinc-100">
-          <CardContent className="p-4 text-center">
-            <Target className="w-8 h-8 text-neon-blue mx-auto mb-2" />
-            <p className="text-2xl font-bold text-zinc-900">4</p>
-            <p className="text-xs text-zinc-500">Fırsat Bulundu</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Menü */}
-      <Card className="border-2 border-zinc-100">
-        <CardContent className="p-0">
-          {menuItems.map((item, index) => (
-            <button
-              key={item.label}
-              className={`w-full flex items-center justify-between p-4 hover:bg-zinc-50 transition-colors ${
-                index !== menuItems.length - 1 ? "border-b border-zinc-100" : ""
-              }`}
+      {/* Neden Metrekare? */}
+      <Card className="border-2 border-zinc-200 dark:border-zinc-800">
+        <CardHeader className="pb-4 pt-6">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Sparkles className="w-5 h-5 text-purple-500" />
+            Neden Metrekare?
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 pb-6">
+          {whyMetrekare.map((item, index) => (
+            <div
+              key={item.title}
+              className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 space-y-2"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-zinc-100 rounded-xl flex items-center justify-center">
-                  <item.icon className="w-5 h-5 text-zinc-600" />
+                <div className="w-8 h-8 bg-foreground text-background rounded-lg flex items-center justify-center text-sm font-bold">
+                  {index + 1}
                 </div>
-                <div className="text-left">
-                  <p className="font-semibold text-zinc-900">{item.label}</p>
-                  <p className="text-xs text-zinc-500">{item.description}</p>
-                </div>
+                <h4 className="font-semibold text-foreground">
+                  {item.title}
+                </h4>
               </div>
-              <ChevronRight className="w-5 h-5 text-zinc-400" />
-            </button>
+              <p className="text-sm text-muted-foreground leading-relaxed pl-11">
+                {item.description}
+              </p>
+            </div>
           ))}
         </CardContent>
       </Card>
 
-      {/* Çıkış */}
-      <Button variant="outline" className="w-full text-red-500 hover:text-red-600 hover:bg-red-50">
-        <LogOut className="mr-2 w-4 h-4" />
-        Çıkış Yap
-      </Button>
+      {/* Takım */}
+      <Card className="border-2 border-zinc-200 dark:border-zinc-800">
+        <CardHeader className="pb-4 pt-6">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Users className="w-5 h-5 text-blue-500" />
+            Kernel Invaders Takımı
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 pb-6">
+          {teamMembers.map((member) => (
+            <div
+              key={member.name}
+              className="flex items-center gap-4 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50"
+            >
+              <div className={`w-14 h-14 ${member.color} rounded-xl flex items-center justify-center text-white font-bold text-lg`}>
+                {member.avatar}
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-foreground">{member.name}</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{member.role}</p>
+              </div>
+            </div>
+          ))}
+          
+          <div className="pt-4 flex items-center justify-center gap-2 text-muted-foreground">
+            <GraduationCap className="w-4 h-4" />
+            <span className="text-sm">Atatürk Üniversitesi - Bilgisayar Mühendisliği</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Teknolojiler */}
+      <Card className="border-2 border-zinc-200 dark:border-zinc-800">
+        <CardHeader className="pb-4 pt-6">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Code className="w-5 h-5 text-emerald-500" />
+            Kullanılan Teknolojiler
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pb-6">
+          <div className="flex flex-wrap gap-2">
+            {technologies.map((tech) => (
+              <Badge
+                key={tech.name}
+                variant="secondary"
+                className={`text-xs px-3 py-1 ${
+                  tech.category === "Frontend"
+                    ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                    : tech.category === "Backend"
+                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                    : "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                }`}
+              >
+                {tech.name}
+              </Badge>
+            ))}
+          </div>
+          
+          <div className="mt-5 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 flex items-center gap-3">
+            <Cpu className="w-5 h-5 text-muted-foreground" />
+            <div className="text-sm text-muted-foreground">
+              <span className="font-semibold text-foreground">Model:</span> LightGBM ile eğitilmiş regresyon modeli
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* İletişim */}
+      <Card className="border-2 border-zinc-200 dark:border-zinc-800">
+        <CardHeader className="pb-4 pt-6">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Globe className="w-5 h-5 text-orange-500" />
+            Bağlantılar
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 pb-6">
+          <a
+            href="https://github.com/PoyrazK/Kernel-Invaiders"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-4 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          >
+            <Github className="w-6 h-6" />
+            <div className="flex-1">
+              <p className="font-semibold text-sm text-foreground">GitHub Repository</p>
+              <p className="text-sm text-muted-foreground mt-0.5">Kaynak kodları inceleyin</p>
+            </div>
+          </a>
+        </CardContent>
+      </Card>
 
       {/* Versiyon */}
-      <p className="text-center text-xs text-zinc-400">
-        Metrekare v1.0.0 • Made with ❤️ in İstanbul
-      </p>
+      <div className="text-center space-y-3 py-6">
+        <p className="text-sm text-muted-foreground">
+          Metrekare v1.0.0
+        </p>
+        <p className="text-sm text-muted-foreground flex items-center justify-center gap-1.5">
+          Made with <Heart className="w-4 h-4 text-red-500 fill-red-500" /> in Erzurum for İstanbul
+        </p>
+      </div>
     </PageContainer>
   );
 }

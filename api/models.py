@@ -58,3 +58,31 @@ class HealthResponse(BaseModel):
     status: str
     model_loaded: bool
     encoder_loaded: bool
+
+
+class OpportunityItem(BaseModel):
+    """Fırsat ev öğesi"""
+    district: str = Field(..., description="İlçe")
+    neighborhood: str = Field(..., description="Mahalle")
+    m2: float = Field(..., description="Metrekare")
+    rooms: int = Field(..., description="Oda sayısı")
+    price: float = Field(..., description="İlan fiyatı")
+    fair_value: float = Field(..., description="Tahmini değer")
+    diff_percent: float = Field(..., description="Fark yüzdesi (negatif = fırsat)")
+    building_age: Optional[int] = Field(None, description="Bina yaşı")
+    floor: Optional[int] = Field(None, description="Kat")
+
+
+class OpportunitiesRequest(BaseModel):
+    """Fırsat evleri isteği"""
+    district: str = Field(..., description="Mevcut ilçe")
+    neighborhood: Optional[str] = Field(None, description="Mevcut mahalle")
+    m2: Optional[float] = Field(None, description="Hedef metrekare")
+    rooms: Optional[int] = Field(None, description="Hedef oda sayısı")
+    limit: int = Field(default=10, ge=1, le=50, description="Maksimum sonuç sayısı")
+
+
+class OpportunitiesResponse(BaseModel):
+    """Fırsat evleri yanıtı"""
+    opportunities: list[OpportunityItem] = Field(..., description="Fırsat listesi")
+    total_found: int = Field(..., description="Toplam bulunan sayısı")

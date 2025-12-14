@@ -3,7 +3,23 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, FileText, RefreshCw, MapPin, Ruler, DoorOpen, Calendar } from "lucide-react";
+import { 
+  ArrowLeft, 
+  FileText, 
+  RefreshCw, 
+  MapPin, 
+  Ruler, 
+  DoorOpen, 
+  Calendar, 
+  ChevronDown, 
+  ChevronUp, 
+  Pencil,
+  Loader2,
+  Building2,
+  Layers,
+  Home,
+  Banknote
+} from "lucide-react";
 
 import { PageContainer } from "@/components/layout/page-container";
 import { ResultCards } from "@/components/result-cards";
@@ -17,10 +33,28 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ValuationResult } from "@/lib/types";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Combobox } from "@/components/ui/combobox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { OpportunitiesSection } from "@/components/opportunities-section";
+import { ValuationResult, ValuationFormData, PropertyStatus, OpportunityItem } from "@/lib/types";
 import { formatCurrency, formatShortDate } from "@/lib/utils";
 import { AlertTriangle } from "lucide-react";
 import { getDistrictCenter } from "@/lib/istanbul-district-centers";
+import { ISTANBUL_DISTRICTS, ROOM_OPTIONS, predictValue, parseRooms } from "@/lib/api";
+import { addToHistory } from "@/lib/storage";
 
 /**
  * Sonuç Sayfası
@@ -31,6 +65,12 @@ export default function ResultPage() {
   const router = useRouter();
   const [result, setResult] = useState<ValuationResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isReanalyzing, setIsReanalyzing] = useState(false);
+  
+  // Edit form state
+  const [editForm, setEditForm] = useState<ValuationFormData | null>(null);
+  const [selectedDistrict, setSelectedDistrict] = useState<string>("");
 
   useEffect(() => {
     // localStorage'dan sonucu al
@@ -42,6 +82,9 @@ export default function ResultPage() {
         // timestamp'i Date objesine çevir
         parsed.timestamp = new Date(parsed.timestamp);
         setResult(parsed);
+        // Initialize edit form with current values
+        setEditForm(parsed.formData);
+        setSelectedDistrict(parsed.formData.district);
       } catch (error) {
         console.error("Sonuç parse hatası:", error);
       }
@@ -49,6 +92,83 @@ export default function ResultPage() {
 
     setIsLoading(false);
   }, []);
+
+  // Get neighborhoods for selected district
+  const neighborhoods = selectedDistrict
+    ? ISTANBUL_DISTRICTS.find((d) => d.name === selectedDistrict)?.neighborhoods || []
+    : [];
+
+  // Handle district change
+  const handleDistrictChange = (district: string) => {
+    setSelectedDistrict(district);
+    if (editForm) {
+      setEditForm({ ...editForm, district, neighborhood: "" });
+    }
+  };
+
+  // Handle re-analysis
+  const handleReanalyze = async () => {
+    if (!editForm) return;
+    
+    setIsReanalyzing(true);
+    try {
+      const newResult = await predictValue(editForm);
+      
+      // Save to localStorage
+      localStorage.setItem("valuationResult", JSON.stringify(newResult));
+      
+      // Add to history
+      addToHistory(newResult);
+      
+      // Update state
+      setResult(newResult);
+      setIsEditOpen(false);
+    } catch (error) {
+      console.error("Re-analysis error:", error);
+    } finally {
+      setIsReanalyzing(false);
+    }
+  };
+
+  // Handle opportunity analysis - analyze clicked opportunity and show result
+  const handleOpportunityAnalyze = async (opportunity: OpportunityItem) => {
+    setIsLoading(true);
+    try {
+      // Convert opportunity to form data format
+      const opportunityFormData: ValuationFormData = {
+        district: opportunity.district,
+        neighborhood: opportunity.neighborhood,
+        squareMeters: opportunity.m2,
+        rooms: `${opportunity.rooms}+1`, // Convert number to string format
+        buildingAge: opportunity.buildingAge || 5,
+        floor: opportunity.floor || 3,
+        totalFloors: 6, // Default
+        status: "Boş" as PropertyStatus,
+        listingPrice: opportunity.price,
+      };
+
+      // Get new prediction for this opportunity
+      const newResult = await predictValue(opportunityFormData);
+      
+      // Save to localStorage
+      localStorage.setItem("valuationResult", JSON.stringify(newResult));
+      
+      // Add to history
+      addToHistory(newResult);
+      
+      // Update state with new result
+      setResult(newResult);
+      setEditForm(opportunityFormData);
+      setSelectedDistrict(opportunity.district);
+      
+      // Scroll to top to show new result
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (error) {
+      console.error("Opportunity analysis error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Loading state
   if (isLoading) {
@@ -132,36 +252,238 @@ export default function ResultPage() {
         </div>
       </div>
 
-      {/* Konut Özeti */}
-      <Card className="border-2 border-zinc-100">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold text-zinc-500">
-            Analiz Edilen Konut
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-3">
-            <Badge variant="outline" className="text-sm py-1">
-              <MapPin className="w-3 h-3 mr-1" />
-              {result.formData.district}, {result.formData.neighborhood}
-            </Badge>
-            <Badge variant="outline" className="text-sm py-1">
-              <Ruler className="w-3 h-3 mr-1" />
-              {result.formData.squareMeters} m²
-            </Badge>
-            <Badge variant="outline" className="text-sm py-1">
-              <DoorOpen className="w-3 h-3 mr-1" />
-              {result.formData.rooms}
-            </Badge>
-            <Badge variant="outline" className="text-sm py-1">
-              <Calendar className="w-3 h-3 mr-1" />
-              {result.formData.buildingAge} yaşında
-            </Badge>
-            <Badge variant="outline" className="text-sm py-1">
-              {result.formData.floor}. kat / {result.formData.totalFloors} kat
-            </Badge>
-          </div>
-        </CardContent>
+      {/* Konut Özeti - Collapsible Edit Panel */}
+      <Card className="border-2 border-zinc-100 overflow-hidden">
+        <Collapsible open={isEditOpen} onOpenChange={setIsEditOpen}>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold text-zinc-500">
+                Analiz Edilen Konut
+              </CardTitle>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <Pencil className="w-4 h-4" />
+                  {isEditOpen ? "Kapat" : "Düzenle"}
+                  {isEditOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </Button>
+              </CollapsibleTrigger>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Current Values Display */}
+            <div className="flex flex-wrap gap-3">
+              <Badge variant="outline" className="text-sm py-1">
+                <MapPin className="w-3 h-3 mr-1" />
+                {result.formData.district}, {result.formData.neighborhood}
+              </Badge>
+              <Badge variant="outline" className="text-sm py-1">
+                <Ruler className="w-3 h-3 mr-1" />
+                {result.formData.squareMeters} m²
+              </Badge>
+              <Badge variant="outline" className="text-sm py-1">
+                <DoorOpen className="w-3 h-3 mr-1" />
+                {result.formData.rooms}
+              </Badge>
+              <Badge variant="outline" className="text-sm py-1">
+                <Calendar className="w-3 h-3 mr-1" />
+                {result.formData.buildingAge} yaşında
+              </Badge>
+              <Badge variant="outline" className="text-sm py-1">
+                <Layers className="w-3 h-3 mr-1" />
+                {result.formData.floor}. kat / {result.formData.totalFloors} kat
+              </Badge>
+              <Badge variant="outline" className="text-sm py-1">
+                <Banknote className="w-3 h-3 mr-1" />
+                {formatCurrency(result.formData.listingPrice)}
+              </Badge>
+            </div>
+
+            {/* Collapsible Edit Form */}
+            <CollapsibleContent className="space-y-6">
+              <div className="border-t pt-4 mt-4">
+                <p className="text-sm text-muted-foreground mb-4">
+                  Parametreleri değiştirip tekrar analiz edebilirsiniz.
+                </p>
+                
+                {editForm && (
+                  <div className="grid gap-6">
+                    {/* Row 1: Location */}
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-muted-foreground" />
+                          İlçe
+                        </Label>
+                        <Combobox
+                          options={ISTANBUL_DISTRICTS.map((d) => ({
+                            value: d.name,
+                            label: d.name,
+                          }))}
+                          value={editForm.district}
+                          onValueChange={handleDistrictChange}
+                          placeholder="İlçe seçin"
+                          searchPlaceholder="İlçe ara..."
+                          emptyText="İlçe bulunamadı"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Building2 className="w-4 h-4 text-muted-foreground" />
+                          Mahalle
+                        </Label>
+                        <Combobox
+                          options={neighborhoods.map((n) => ({
+                            value: n,
+                            label: n,
+                          }))}
+                          value={editForm.neighborhood}
+                          onValueChange={(value: string) => setEditForm({ ...editForm, neighborhood: value })}
+                          placeholder="Mahalle seçin"
+                          searchPlaceholder="Mahalle ara..."
+                          emptyText="Önce ilçe seçin"
+                          disabled={!selectedDistrict}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Row 2: Property Details */}
+                    <div className="grid sm:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Ruler className="w-4 h-4 text-muted-foreground" />
+                          m²
+                        </Label>
+                        <Input
+                          type="number"
+                          value={editForm.squareMeters}
+                          onChange={(e) => setEditForm({ ...editForm, squareMeters: Number(e.target.value) })}
+                          min={20}
+                          max={1000}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <DoorOpen className="w-4 h-4 text-muted-foreground" />
+                          Oda Sayısı
+                        </Label>
+                        <Select
+                          value={editForm.rooms}
+                          onValueChange={(value) => setEditForm({ ...editForm, rooms: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Oda sayısı" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ROOM_OPTIONS.map((room) => (
+                              <SelectItem key={room} value={room}>
+                                {room}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-muted-foreground" />
+                          Bina Yaşı
+                        </Label>
+                        <Input
+                          type="number"
+                          value={editForm.buildingAge}
+                          onChange={(e) => setEditForm({ ...editForm, buildingAge: Number(e.target.value) })}
+                          min={0}
+                          max={100}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Row 3: Floor & Price */}
+                    <div className="grid sm:grid-cols-4 gap-4">
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Layers className="w-4 h-4 text-muted-foreground" />
+                          Bulunduğu Kat
+                        </Label>
+                        <Input
+                          type="number"
+                          value={editForm.floor}
+                          onChange={(e) => setEditForm({ ...editForm, floor: Number(e.target.value) })}
+                          min={-1}
+                          max={50}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Building2 className="w-4 h-4 text-muted-foreground" />
+                          Toplam Kat
+                        </Label>
+                        <Input
+                          type="number"
+                          value={editForm.totalFloors}
+                          onChange={(e) => setEditForm({ ...editForm, totalFloors: Number(e.target.value) })}
+                          min={1}
+                          max={50}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Home className="w-4 h-4 text-muted-foreground" />
+                          Durum
+                        </Label>
+                        <Select
+                          value={editForm.status}
+                          onValueChange={(value: PropertyStatus) => setEditForm({ ...editForm, status: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="BOŞ">Boş</SelectItem>
+                            <SelectItem value="KİRACILI">Kiracılı</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Banknote className="w-4 h-4 text-muted-foreground" />
+                          İlan Fiyatı (₺)
+                        </Label>
+                        <Input
+                          type="number"
+                          value={editForm.listingPrice}
+                          onChange={(e) => setEditForm({ ...editForm, listingPrice: Number(e.target.value) })}
+                          min={100000}
+                          max={100000000}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Action Button */}
+                    <div className="flex justify-end pt-2">
+                      <Button 
+                        onClick={handleReanalyze} 
+                        disabled={isReanalyzing || !editForm.district || !editForm.neighborhood}
+                        className="gap-2"
+                      >
+                        {isReanalyzing ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Analiz Ediliyor...
+                          </>
+                        ) : (
+                          <>
+                            <RefreshCw className="w-4 h-4" />
+                            Tekrar Analiz Et
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CollapsibleContent>
+          </CardContent>
+        </Collapsible>
       </Card>
 
       {/* Tab Navigation */}
@@ -335,6 +657,14 @@ export default function ResultPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Fırsat İlanları */}
+      <OpportunitiesSection 
+        district={result.formData.district} 
+        m2={result.formData.squareMeters} 
+        rooms={parseRooms(result.formData.rooms)}
+        onAnalyze={handleOpportunityAnalyze}
+      />
 
       {/* Aksiyon Butonları */}
       <div className="flex flex-col sm:flex-row gap-4 pt-4">

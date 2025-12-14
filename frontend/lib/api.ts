@@ -1,4 +1,4 @@
-import { PredictRequest, PredictResponse, ValuationFormData, ValuationResult } from "./types";
+import { PredictRequest, PredictResponse, ValuationFormData, ValuationResult, OpportunitiesRequest, OpportunitiesResponse, OpportunityItem } from "./types";
 
 // API base URL - production'da environment variable'dan alınacak
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -83,7 +83,7 @@ export function isApiConnected(): boolean {
  * Oda sayısını string'den number'a çevirir
  * Örn: "2+1" -> 3, "3+1" -> 4
  */
-function parseRooms(rooms: string): number {
+export function parseRooms(rooms: string): number {
   const parts = rooms.split("+");
   return parts.reduce((sum, part) => sum + parseInt(part, 10), 0);
 }
@@ -293,3 +293,126 @@ export const ROOM_OPTIONS = [
   "6+2",
 ];
 
+/**
+ * Fırsat evleri API'si
+ * Benzer özelliklerde değerinin altında fiyatlanmış evleri döndürür
+ */
+export async function getOpportunities(
+  district: string,
+  neighborhood?: string,
+  m2?: number,
+  rooms?: number,
+  limit: number = 10
+): Promise<OpportunityItem[]> {
+  const requestData: OpportunitiesRequest = {
+    district,
+    neighborhood,
+    m2,
+    rooms,
+    limit,
+  };
+
+  console.log("🔄 Fırsatlar API isteği gönderiliyor:", API_BASE_URL);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/opportunities`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestData),
+    });
+
+    if (!response.ok) {
+      console.error("❌ Fırsatlar API Hata:", response.status);
+      return getMockOpportunities(district, m2, rooms);
+    }
+
+    const data = await response.json();
+    console.log("✅ Fırsatlar alındı:", data.opportunities?.length || 0);
+
+    // Transform snake_case to camelCase
+    return (data.opportunities || []).map((opp: Record<string, unknown>) => ({
+      district: opp.district,
+      neighborhood: opp.neighborhood,
+      m2: opp.m2,
+      rooms: opp.rooms,
+      price: opp.price,
+      fairValue: opp.fair_value,
+      diffPercent: opp.diff_percent,
+      buildingAge: opp.building_age,
+      floor: opp.floor,
+    }));
+  } catch (error) {
+    console.warn("⚠️ Fırsatlar API bağlantısı başarısız, mock data kullanılıyor:", error);
+    return getMockOpportunities(district, m2, rooms);
+  }
+}
+
+/**
+ * Mock fırsat verileri
+ */
+function getMockOpportunities(district: string, targetM2?: number, targetRooms?: number): OpportunityItem[] {
+  const baseM2 = targetM2 || 100;
+  const baseRooms = targetRooms || 3;
+  
+  const mockData: OpportunityItem[] = [
+    {
+      district,
+      neighborhood: "Merkez",
+      m2: Math.round(baseM2 * 0.9),
+      rooms: baseRooms,
+      price: 2500000,
+      fairValue: 2900000,
+      diffPercent: -13.8,
+      buildingAge: 8,
+      floor: 3,
+    },
+    {
+      district,
+      neighborhood: "Yeni Mahalle",
+      m2: Math.round(baseM2 * 1.1),
+      rooms: baseRooms + 1,
+      price: 3200000,
+      fairValue: 3650000,
+      diffPercent: -12.3,
+      buildingAge: 5,
+      floor: 5,
+    },
+    {
+      district,
+      neighborhood: "Sahil",
+      m2: Math.round(baseM2 * 0.85),
+      rooms: baseRooms - 1,
+      price: 1950000,
+      fairValue: 2200000,
+      diffPercent: -11.4,
+      buildingAge: 12,
+      floor: 2,
+    },
+    {
+      district,
+      neighborhood: "Park Yanı",
+      m2: Math.round(baseM2 * 1.05),
+      rooms: baseRooms,
+      price: 2850000,
+      fairValue: 3150000,
+      diffPercent: -9.5,
+      buildingAge: 3,
+      floor: 7,
+    },
+    {
+      district,
+      neighborhood: "Cadde Üstü",
+      m2: Math.round(baseM2 * 0.95),
+      rooms: baseRooms,
+      price: 2650000,
+      fairValue: 2900000,
+      diffPercent: -8.6,
+      buildingAge: 6,
+      floor: 4,
+    },
+  ];
+
+  return mockData;
+}

@@ -451,7 +451,28 @@ export function ValuationForm() {
                     <FormItem>
                       <FormLabel>İlan Satış Fiyatı (₺)</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="5.000.000" {...field} />
+                        <Input 
+                          type="number" 
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          placeholder="5.000.000" 
+                          {...field}
+                          value={field.value === 0 ? "" : field.value}
+                          onChange={(e) => {
+                            const value = e.target.value === "" ? 0 : Number(e.target.value);
+                            field.onChange(value);
+                          }}
+                          onKeyDown={(e) => {
+                            // Block letters and special characters, allow only numbers and control keys
+                            if (
+                              !/[0-9]/.test(e.key) && 
+                              !['Backspace', 'Delete', 'Tab', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key) &&
+                              !(e.ctrlKey || e.metaKey)
+                            ) {
+                              e.preventDefault();
+                            }
+                          }}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

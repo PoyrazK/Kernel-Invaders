@@ -4,7 +4,10 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from models import PredictRequest, PredictResponse, HealthResponse
+from models import (
+    PredictRequest, PredictResponse, HealthResponse,
+    OpportunitiesRequest, OpportunitiesResponse, OpportunityItem
+)
 from predictor import predictor
 
 
@@ -87,6 +90,40 @@ async def predict(request: PredictRequest):
     try:
         result = predictor.predict(request)
         return PredictResponse(**result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/opportunities", response_model=OpportunitiesResponse)
+async def get_opportunities(request: OpportunitiesRequest):
+    """
+    Benzer özelliklerde fırsat evleri bul
+    
+    - **district**: Mevcut analiz edilen ilçe
+    - **neighborhood**: Mevcut mahalle (opsiyonel)
+    - **m2**: Hedef metrekare (opsiyonel)
+    - **rooms**: Hedef oda sayısı (opsiyonel)
+    - **limit**: Maksimum sonuç sayısı (varsayılan: 10)
+    
+    Returns:
+    - **opportunities**: Fırsat listesi (en düşük farktan başlayarak)
+    - **total_found**: Toplam bulunan fırsat sayısı
+    """
+    try:
+        opportunities = predictor.get_opportunities(
+            district=request.district,
+            neighborhood=request.neighborhood,
+            target_m2=request.m2,
+            target_rooms=request.rooms,
+            limit=request.limit
+        )
+        
+        opportunity_items = [OpportunityItem(**opp) for opp in opportunities]
+        
+        return OpportunitiesResponse(
+            opportunities=opportunity_items,
+            total_found=len(opportunity_items)
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

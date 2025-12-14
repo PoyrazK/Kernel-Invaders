@@ -10,6 +10,7 @@ import type { InvestmentAdvice } from "@/lib/types";
 // Easter egg koordinatları
 const ERZURUM_CENTER: LatLng = [39.9055, 41.2658];
 const BAKU_CENTER: LatLng = [40.4093, 49.8671];
+const SAKARYA_CENTER: LatLng = [40.7569, 30.3783];
 
 export interface MapMarker {
   position: LatLng;
@@ -258,6 +259,22 @@ export function IstanbulMap({ markers, advice, fairValue, listingPrice }: Istanb
                 <div className="text-lg mb-1">❤️</div>
                 <div className="font-bold text-sm">Bakü</div>
                 <div className="text-xs text-gray-500 mt-1">Bir millet, iki devlet 🇦🇿</div>
+              </div>
+            </Popup>
+          </Marker>
+        )}
+        
+        {/* Easter Egg: Sakarya'da kalp */}
+        {showEasterEgg && (
+          <Marker
+            position={SAKARYA_CENTER}
+            icon={heartIcon}
+          >
+            <Popup>
+              <div className="text-center p-2">
+                <div className="text-lg mb-1">❤️</div>
+                <div className="font-bold text-sm">Sakarya</div>
+                <div className="text-xs text-gray-500 mt-1">Yeşilin başkenti 🌲</div>
               </div>
             </Popup>
           </Marker>

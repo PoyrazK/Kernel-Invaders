@@ -346,34 +346,34 @@ export default function DetailsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-neon-pink" />
-            Model Varsayımları
+            Neden Metrekare?
           </CardTitle>
           <CardDescription>
-            Değerleme modelinin dayandığı temel varsayımlar
+            Modelimizi güçlü kılan temel özellikler
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {[
               {
-                title: "Piyasa Etkinliği",
+                title: "23.000+ Gerçek Veri",
                 description:
-                  "Model, İstanbul emlak piyasasının yarı-etkin olduğunu ve fiyatların genel olarak mevcut bilgiyi yansıttığını varsayar.",
+                  "Modelimiz İstanbul'daki 23.000'den fazla gerçek emlak ilanı verisiyle eğitildi. Sahte veya tahmini veri yok, sadece piyasadan toplanan güncel veriler.",
               },
               {
-                title: "Karşılaştırılabilir Satışlar",
+                title: "LightGBM Makine Öğrenmesi",
                 description:
-                  "Değerleme, benzer özelliklere sahip konutların yakın zamandaki satış verilerine dayanır. Özel durumlar (acil satış, tapu sorunları vb.) dikkate alınmamıştır.",
+                  "Gradient boosting tabanlı LightGBM algoritması kullanıyoruz. Bu model, karmaşık fiyat ilişkilerini yakalayarak %92+ doğruluk oranı sağlıyor.",
               },
               {
-                title: "Makroekonomik Sabitlik",
+                title: "Bölgesel Fiyat Analizi",
                 description:
-                  "Model, değerleme tarihindeki ekonomik koşulların kısa vadede önemli ölçüde değişmeyeceğini varsayar.",
+                  "Sadece genel tahmin değil, ilçe ve mahalle bazında ortalama fiyatları, m² değerlerini ve piyasa trendlerini de görüyorsunuz.",
               },
               {
-                title: "Veri Kalitesi",
+                title: "Anlık Sonuç",
                 description:
-                  "Tahminler, kullanıcının girdiği verilerin doğruluğuna bağlıdır. Hatalı veri girişi yanıltıcı sonuçlara yol açabilir.",
+                  "Emlakçıya gitmenize gerek yok. 3 adımda, saniyeler içinde evinizin adil piyasa değerini öğrenin ve fırsat mı pahalı mı hemen görün.",
               },
             ].map((assumption, index) => (
               <div

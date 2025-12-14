@@ -94,3 +94,31 @@ export interface PriceComparisonData {
   listingPrice: number;
 }
 
+// Fırsat ev öğesi
+export interface OpportunityItem {
+  district: string;
+  neighborhood: string;
+  m2: number;
+  rooms: number;
+  price: number;
+  fairValue: number;
+  diffPercent: number;
+  buildingAge?: number;
+  floor?: number;
+}
+
+// Fırsat evleri API isteği
+export interface OpportunitiesRequest {
+  district: string;
+  neighborhood?: string;
+  m2?: number;
+  rooms?: number;
+  limit?: number;
+}
+
+// Fırsat evleri API yanıtı
+export interface OpportunitiesResponse {
+  opportunities: OpportunityItem[];
+  totalFound: number;
+}
+

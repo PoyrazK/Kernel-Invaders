@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Columns2, Home, Search, History, User } from "lucide-react";
+import { Columns2, Home, Search, History, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -21,7 +21,7 @@ const navItems: NavItem[] = [
   { href: "/analyze", icon: Search, label: "Analiz Et" },
   { href: "/compare", icon: Columns2, label: "Karşılaştır" },
   { href: "/history", icon: History, label: "Geçmiş" },
-  { href: "/profile", icon: User, label: "Profil" },
+  { href: "/profile", icon: Info, label: "Hakkımızda" },
 ];
 
 export function BottomNav() {
