@@ -1,13 +1,14 @@
-# 🏠 Kernel-Invaiders - İstanbul Emlak Değerleme Sistemi
+# 🏠 Kernel-Invaders - İstanbul Emlak Değerleme Sistemi
 
 ## AI Spark Hackathon 2025
 
 Yapay zeka destekli konut değerleme ve yatırım tavsiye sistemi.
 
-![Python](https://img.shields.io/badge/Python-3.9+-blue)
+![Python](https://img.shields.io/badge/Python-3.11+-blue)
 ![Next.js](https://img.shields.io/badge/Next.js-14.2-black)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.124-green)
 ![LightGBM](https://img.shields.io/badge/LightGBM-4.5-orange)
+![Docker](https://img.shields.io/badge/Docker-Ready-blue)
 
 ## 🎯 Proje Hedefi
 
@@ -18,26 +19,30 @@ Yeni mezun mühendisler ve araştırma görevlileri için İstanbul emlak piyasa
 ## 📁 Proje Yapısı
 
 ```
-Kernel-Invaiders/
-├── data/                  # Temizlenmiş veri
-│   └── processed_data.pkl
-├── models/                # Eğitilmiş modeller
-│   ├── model.pkl          # LightGBM Regressor (R²: 0.8115)
-│   └── encoder.pkl        # Encoder
-├── notebooks/             # Eğitim notebook'ları
-│   └── model_training.ipynb
+Kernel-Invaders/
 ├── api/                   # FastAPI Backend
+│   ├── Dockerfile
 │   ├── main.py
 │   ├── predictor.py
 │   ├── models.py
+│   ├── encoder.py
 │   └── requirements.txt
 ├── frontend/              # Next.js Frontend
+│   ├── Dockerfile
 │   ├── app/
 │   ├── components/
 │   └── lib/
-├── app.py                 # Streamlit Arayüzü
-├── requirements.txt       # Ana bağımlılıklar
-└── SUNUM_RAPORU.txt       # Sunum raporu
+├── models/                # Eğitilmiş modeller
+│   ├── model.pkl          # LightGBM Regressor
+│   └── encoder.pkl        # Optimization Encoder
+├── data/                  # Temizlenmiş veri
+│   └── processed_data.pkl
+├── notebooks/             # Eğitim notebook'ları
+│   └── model_training.ipynb
+├── docker-compose.yml     # Docker orchestration
+├── encoder.py             # Encoder modülü
+├── processed_data.pkl     # İşlenmiş veri
+└── requirements.txt       # Ana bağımlılıklar
 ```
 
 ## 🚀 Kurulum ve Çalıştırma
@@ -46,13 +51,7 @@ Kernel-Invaiders/
 ```bash
 docker-compose up
 ```
-> Backend: http://localhost:8000 | Frontend: http://localhost:3000 | Streamlit: http://localhost:8501
-
-### Streamlit Arayüzü (Hızlı Demo)
-```bash
-pip install -r requirements.txt
-streamlit run app.py
-```
+> Backend: http://localhost:8000 | Frontend: http://localhost:3000
 
 ### FastAPI + Next.js (Manuel)
 ```bash
@@ -84,7 +83,7 @@ cd frontend && npm install && npm run dev
 | **LightGBM Tuned ⭐** | **0.8115** | **314,981** |
 
 ### Kullanılan Özellikler
-- İlçe, Mahalle (Target Encoded)
+- İlçe, Mahalle (Encoded)
 - m² (Net)
 - Oda Sayısı
 - Bina Yaşı
@@ -94,13 +93,13 @@ cd frontend && npm install && npm run dev
 
 | Durum | Koşul |
 |-------|-------|
-| **FIRSAT** 🟢 | İlan fiyatı < Tahmin × 0.90 |
-| **NORMAL** 🟡 | Tahmin × 0.90 ≤ İlan ≤ Tahmin × 1.10 |
-| **PAHALI** 🔴 | İlan fiyatı > Tahmin × 1.10 |
+| **FIRSAT** 🟢 | İlan fiyatı < Tahmin × 0.95 |
+| **NORMAL** 🟡 | Tahmin × 0.95 ≤ İlan ≤ Tahmin × 1.05 |
+| **PAHALI** 🔴 | İlan fiyatı > Tahmin × 1.05 |
 
 ## 👥 Takım
 
-**Kernel-Invaiders**
+**Kernel-Invaders**
 
 ## 📄 Lisans
 
