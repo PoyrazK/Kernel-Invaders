@@ -25,10 +25,18 @@ class HousePricePredictor:
     def load(self, models_dir: str = None):
         """Model ve encoder'ı yükle"""
         if models_dir is None:
-            # Default: parent directory's models folder
-            base_path = Path(__file__).parent.parent
-            models_dir = base_path / "models"
+            # Check if running in Docker (/app) or locally
+            app_path = Path("/app")
+            if app_path.exists() and (app_path / "models").exists():
+                # Docker environment
+                base_path = app_path
+                models_dir = app_path / "models"
+            else:
+                # Local development - parent directory's models folder
+                base_path = Path(__file__).parent.parent
+                models_dir = base_path / "models"
         else:
+            base_path = Path(__file__).parent.parent
             models_dir = Path(models_dir)
         
         # Load the model

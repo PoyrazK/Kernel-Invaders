@@ -42,26 +42,25 @@ Kernel-Invaiders/
 
 ## 🚀 Kurulum ve Çalıştırma
 
+### 🐳 Docker ile (Önerilen - Tek Komut!) ⭐
+```bash
+docker-compose up
+```
+> Backend: http://localhost:8000 | Frontend: http://localhost:3000 | Streamlit: http://localhost:8501
+
 ### Streamlit Arayüzü (Hızlı Demo)
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-### FastAPI + Next.js (Full Stack)
-
-#### Backend
+### FastAPI + Next.js (Manuel)
 ```bash
-cd api
-pip install -r requirements.txt
-uvicorn main:app --host 0.0.0.0 --port 8000
-```
+# Terminal 1 - Backend
+cd api && pip install -r requirements.txt && uvicorn main:app --port 8000
 
-#### Frontend
-```bash
-cd frontend
-npm install
-npm run dev
+# Terminal 2 - Frontend  
+cd frontend && npm install && npm run dev
 ```
 
 ## 🤖 Model Detayları

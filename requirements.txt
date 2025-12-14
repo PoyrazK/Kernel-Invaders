@@ -1,9 +1,6 @@
 # AI SPARK HACKATHON - Gerekli Kütüphaneler
 # ==========================================
 
-# Web Arayüzü
-streamlit>=1.28.0
-
 # Veri İşleme
 pandas>=2.0.0
 numpy>=1.24.0
