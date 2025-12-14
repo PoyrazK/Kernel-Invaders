@@ -1,0 +1,288 @@
+========================================================================
+PROJE SUNUM VE TEKNİK RAPOR DOSYASI
+========================================================================
+
+TAKIM ADI: Kernel-Invaiders
+
+TAKIM ÜYELERİ:
+1.Hüseyin Poyraz Küçükarslan
+2.Muhammed Türker Akarsu 
+3.Ravan Aliyev
+4.Bahadır Koşapınar
+
+------------------------------------------------------------------------
+1. PROJE ÖZETİ 
+------------------------------------------------------------------------
+İstanbul emlak piyasası için 2020 verilerini kullanarak yapay zeka tabanlı 
+"Adil Değer Tahminleyicisi" olan Metrekare'yi geliştirdik. Sistem, girilen ev özelliklerine 
+göre ideal fiyatı tahmin eder ve mevcut ilan fiyatı ile karşılaştırarak 
+kullanıcıya "Fırsat", "Normal" veya "Pahalı" şeklinde yatırım tavsiyesi 
+verir. Kullanıcılara ayrıca o bölgedeki fırsat ilanları da sunuyoruz.
+Bu sayede yatırımcılar saniyeler içinde bilinçli değerleme yapabilir ve 
+karşılaştırma yapabilirler.
+
+------------------------------------------------------------------------
+2. KURULUM VE ÇALIŞTIRMA (How to Run)
+------------------------------------------------------------------------
+   
+🐳 DOCKER İLE (ÖNERİLEN - TEK KOMUT):
+   (Eğer bu yöntem ile projeyi başlatmak istiyorsanız bilgisayarınızda docker kurulu olmalıdır)
+   docker-compose up
+   
+   Backend:  http://localhost:8000
+   Frontend: http://localhost:3000
+
+FASTAPI + NEXT.JS (MANUEL):
+   # Terminal 1 - Backend
+   cd api && pip install -r requirements.txt && uvicorn main:app --port 8000
+   
+   # Terminal 2 - Frontend
+   cd frontend && npm install && npm run dev
+
+(Websitesi ilk girişte donabilir, küçük bir refresh ile düzeliyor)
+
+NOT: Model önceden eğitilmiş ve 'models/' klasöründe hazır bulunmaktadır.
+
+------------------------------------------------------------------------
+3. VERİ ÖN İŞLEME YAKLAŞIMI (Data Engineering)
+------------------------------------------------------------------------
+A) Temizlenen Alanlar:
+   
+   1. FİYAT TEMİZLİĞİ (Price):
+      - Ham veri: "1.250.000 TL", "850,000TL" gibi string formatında
+      - "TL" metni, noktalar ve virgüller temizlendi
+      - Sayısal (float) değere dönüştürüldü
+      - Eksik fiyat değerine sahip satırlar çıkarıldı
+      - Örnek: "1.250.000 TL" → 1250000.0
+   
+   2. ODA SAYISI (Number of rooms):
+      - Ham veri: "3+1", "2+0", "4+2" formatında
+      - "+" işaretinden parçalandı ve toplandı
+      - Numerik değere dönüştürüldü
+      - Örnek: "3+1" → 4, "2+0" → 2, "4+2" → 6
+   
+   3. BİNA YAŞI (Building Age):
+      - Ham veri: "0", "5-10", "11-15", "21 ve üzeri" gibi aralıklar
+      - Aralıklar ortalamasına dönüştürüldü
+      - "21 ve üzeri" → 25 olarak alındı
+      - Örnek: "5-10" → 7.5, "16-20" → 18
+   
+   4. KAT KONUMU (Floor Location):
+      - "Giriş Kat", "1. Kat", "En Üst Kat" gibi metin değerler
+      - Numerik kat numarasına dönüştürüldü
+      - Özel durumlar: Bodrum = -1, Giriş = 0, Çatı Katı = Toplam Kat
+   
+   5. METREKARE (m² Net/Gross):
+      - String değerler sayısala çevrildi
+      - Eksik/hatalı değerler median ile dolduruldu
+      - Aşırı küçük (<10 m²) veya büyük (>1000 m²) değerler filtrelendi
+   
+   6. KREDİ UYGUNLUĞU (Available for Loan):
+      - "Yes", "Available", "Evet" → Krediye Uygun
+      - Sadece krediye uygun evler eğitim setine alındı (yatırımcı odaklı)
+
+B) Eklenen Yeni Özellikler (Feature Engineering):
+
+   1. ALAN ORANI ÖZELLİKLERİ:
+      - Room_Size_Ratio: m² / Oda Sayısı (oda başına düşen alan)
+      - Küçük odalar = kalabalık ev, büyük odalar = ferah ev
+      
+   2. KAT ÖZELLİKLERİ:
+      - Floor_Ratio: Bulunduğu Kat / Toplam Kat (0.0 - 1.0 arası)
+      - Is_Ground_Floor: Giriş kat mı? (0/1) - genelde daha düşük fiyat
+      - Is_Top_Floor: En üst kat mı? (0/1) - manzara için daha yüksek fiyat
+      
+   3. BİNA ÖZELLİKLERİ (Boolean 0/1):
+      - Balcony_Bool: Balkon var mı?
+      - Elevator: Asansör var mı? (özellikle yüksek katlarda önemli)
+      - Parking_Lot: Otopark var mı? (İstanbul'da değer artırıcı)
+      - Security: Güvenlik/site var mı?
+      
+   4. TÜRETILEN KATEGORİLER:
+      - Age_Category: Sıfır(0), Yeni(1-5), Orta(6-15), Eski(16+)
+      - Room_Category: Stüdyo(1-2), Küçük(3), Orta(4), Büyük(5+)
+
+C) Outlier Temizliği (Aykırı Değer Analizi):
+
+   1. NEDEN ÖNEMLİ?
+      - Aşırı düşük/yüksek fiyatlar modelin öğrenmesini bozar
+      - Gerçek dışı veriler (hatalı girişler) modeli yanıltır
+      - Outlier'lar RMSE'yi ciddi şekilde artırır
+   
+   2. UYGULANAN YÖNTEMLER:
+   
+      a) Percentile (Yüzdelik) Yöntemi:
+         - Alt sınır: %1 percentile (~50,000 TL altı)
+         - Üst sınır: %99 percentile (~10,000,000 TL üstü)
+         - Bu aralık dışındaki kayıtlar eğitim setinden çıkarıldı
+      
+      b) IQR (Interquartile Range) Kontrolü:
+         - Q1 (25%) ve Q3 (75%) hesaplandı
+         - IQR = Q3 - Q1
+         - Alt sınır: Q1 - 1.5 × IQR
+         - Üst sınır: Q3 + 1.5 × IQR
+   
+   3. SONUÇLAR:
+      - Toplam ~500 aykırı değer tespit edildi ve çıkarıldı
+      - Veri kalitesi artırıldı, model kararlılığı sağlandı
+      - RMSE'de ~%15 iyileşme gözlemlendi
+
+E) Seçilen Kritik Özellikler:
+   - Konum: District, Neighborhood
+   - Fiziksel: m² (Net), Oda Sayısı, Bina Yaşı, Kat Konumu, Banyo Sayısı
+   - Isıtma: Heating tipi
+   - Ekstralar: Balkon, Asansör, Otopark, Güvenlik
+
+------------------------------------------------------------------------
+4. MODEL MİMARİSİ
+------------------------------------------------------------------------
+NOT == Model dosyamızın 3.3 mb boyutu ve lightweight olması ile, bu özelliğinden
+dolayı da aşırı hızlı çalıştığı için sadece doğruluk payı olarak değil aynı zamanda
+optimizasyon konusunda da en iyi model olduğumuzu düşünüyoruz.
+
+
+
+A) Kullanılan Algoritma: LightGBM Tuned Regressor
+   
+   ★ LightGBM (Light Gradient Boosting Machine), Microsoft tarafından 
+     geliştirilen, endüstri standardı bir makine öğrenmesi algoritmasıdır.
+   
+   ★ Bu algoritmayı seçtik çünkü emlak verilerindeki karmaşık ilişkileri
+     (konum, m², oda sayısı) çok iyi modelleyebiliyor ve yüksek doğruluk sağlıyor.
+     Sadece emlak verilerinde değil genel olarak regresyon fine-tuning için birebir
+
+B) Hiperparametreler (Grid Search + Cross Validation ile Optimize Edildi):
+   ┌────────────────────────┬───────────┬──────────────────────────────┐
+   │ Parametre              │ Değer     │ Açıklama                     │
+   ├────────────────────────┼───────────┼──────────────────────────────┤
+   │ n_estimators           │ 700       │ Ağaç sayısı (iterasyon)      │
+   │ max_depth              │ -1        │ Sınırsız derinlik            │
+   │ learning_rate          │ 0.05      │ Öğrenme hızı (küçük=stabil)  │
+   │ num_leaves             │ 50        │ Yaprak sayısı (karmaşıklık)  │
+   │ subsample              │ 0.9       │ Veri örnekleme oranı         │
+   │ colsample_bytree       │ 0.7       │ Özellik örnekleme oranı      │
+   │ min_child_samples      │ 10        │ Min. yaprak örnek sayısı     │
+   │ reg_alpha (L1)         │ 0.1       │ Lasso regularization         │
+   │ reg_lambda (L2)        │ 2         │ Ridge regularization         │
+   └────────────────────────┴───────────┴──────────────────────────────┘
+
+C) Neden LightGBM? (Rakipler: XGBoost, Random Forest, Gradient Boosting)
+
+   1.  HIZLI EĞİTİM:
+      - XGBoost'tan 10-20x daha hızlı eğitim süresi
+      - Büyük veri setlerinde saniyeler içinde eğitim tamamlama şansı  
+   2. YÜKSEK PERFORMANS:
+      - Gradient Boosting tabanlı ensemble yöntemi
+      - Leaf-wise (yaprak bazlı) büyüme stratejisi
+      - Daha az overfitting riski
+   
+   3. EMLAK VERİSİ İÇİN İDEAL:
+      - Kategorik değişkenleri (İlçe, Mahalle) doğal olarak işler
+      - Eksik değerlere dayanıklı
+      - Non-linear ilişkileri yakalayabilir (konum-fiyat ilişkisi)
+   
+   4. KOLAY OPTİMİZASYON:
+      - Geniş hiperparametre alanı
+      - Early stopping desteği
+      - Cross-validation ile güvenilir sonuçlar
+
+D) Denenen Diğer Modeller ve Karşılaştırma:
+   ┌───────────────────────┬──────────┬─────────────┐
+   │ Model                 │ R² Score │ RMSE (TL)   │
+   ├───────────────────────┼──────────┼─────────────┤
+   │ Random Forest (v1)    │ 0.8512   │ 262,450     │
+   │ Gradient Boosting     │ 0.8789   │ 252,125     │
+   │ XGBoost               │ 0.9015   │ 212,650     │
+   │ XGBoost Tuned         │ 0.9387   │ 202,340     │
+   │ LightGBM Tuned ⭐     │ 0.9618   │ 182,825     │
+   └───────────────────────┴──────────┴─────────────┘
+
+E) Elde Edilen Başarı Skoru:
+   - R-Square: 0.9618
+   - RMSE: 182,825 TL
+   - MAPE: %16.41
+
+------------------------------------------------------------------------
+5. YATIRIM KARAR MANTIĞI (Business Logic)
+------------------------------------------------------------------------
+Modelin tahmin ettiği "Adil Değer" ile kullanıcının girdiği "İlan Fiyatı" 
+arasındaki fark yüzdesel olarak hesaplanır. Model ayrıca ±5% güven aralığı
+(fair_value_min ve fair_value_max) sunarak daha sağlam tahminler verir.
+Aralık tahminlerini kullanarak daha net bir fırsat skoru sunar.
+
+┌─────────────────────────────────────────────────────────────────────┐
+│ KARAR EŞİKLERİ:                                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│ 🟢 FIRSAT    : İlan Fiyatı < Tahmin × 0.95                          │
+│ 🟡 NORMAL    : Tahmin × 0.95 ≤ İlan ≤ Tahmin × 1.05                 │
+│ 🔴 PAHALI    : İlan Fiyatı > Tahmin × 1.05                          │
+└─────────────────────────────────────────────────────────────────────┘
+
+------------------------------------------------------------------------
+6. BİZİ DİĞERLERİNDEN AYIRAN ÖZELLİK (Unique Value)
+------------------------------------------------------------------------
+1. FULL STACK UYGULAMA: 
+   - FastAPI Backend + Next.js framework ile Frontend inşa edildi. 
+   - Docker Compose ile tek komutla çalışabilir
+   - Zod ile form validasyon sağlandı.
+   - FastAPI ile entegrasyonu ve Type-Safety sağlandı
+   - Veri senkronizasyonu için scriptler yazıldı 'districts-data.ts'
+   - Modern, mobil uyumlu arayüz
+
+2. FIRSAT EVLERİ ÖNERİSİ:
+   - Kullanıcının analiz ettiği bölgedeki diğer fırsat ilanları listelenir
+   - Benzer özelliklerdeki evler karşılaştırılabilir
+
+3. GÜÇLÜ MODEL: 
+   - 7 farklı algoritma denendi, hyperparameter tuning yapıldı
+   - Bu sayede en iyi model seçilebildi (LightGBM R²=0.9618)
+
+4. GÜVEN ARALIĞI:
+   - ±5% fiyat aralığı ile daha güvenilir tahminler
+   - fair_value_min ve fair_value_max değerleri sunulur
+
+5. KULLANICI DOSTU ARAYÜZ: 
+   - Bu kısmın en güçlü olduğumuz kısım olduğunu düşünüyoruz
+   - Hero section'da 'Gerçek Değeri' ibaresi blurlanmış olup projenin misyonlarından biri olan piyasa berraklığına dikkat çektik. 
+   - Modern glassmorphism tasarım
+   - Göz alıcı, modern neon renkler tercih edildi. 
+   - TailwindCSS ile tasarım sistemi inşa edildi. 
+   - Shadcn/ui + Radix ile tasarım bütünlüğü sağlandı.
+   - Koyu/açık tema desteği
+   - İstanbul harita görselleştirmesi (Birkaç easter egg)
+   - Responsive, mobil uyumlu
+   - Recharts ile interaktif veri grafikleri 
+
+------------------------------------------------------------------------
+7. TEKNOLOJİ STACK
+------------------------------------------------------------------------
+   - Backend: Python 3.11, FastAPI, LightGBM, Pandas, Scikit-learn
+   - Frontend: Next.js 14, React 18, TailwindCSS, shadcn/ui
+   - DevOps: Docker, Docker Compose
+
+========================================================================
+
+
+------------------------------------------------------------------------
+8. Unique Value (UVP)
+------------------------------------------------------------------------
+Neyi farklı yapıyoruz?
+
+- Hızlı karar desteği: Kullanıcı “fiyat doğru mu?” sorusuna tek ekranda yanıt alıyor (adil değer + aralık + fark yüzdesi + tavsiye).
+
+- Pazarlık gücü: Çıktı sadece tahmin değil; ilan fiyatı ile modelin adil değeri arasındaki farkı (%) söyleyerek pazarlık argümanı üretiyor.
+
+- Benzer fırsatlar: Aynı bölgede/benzer özelliklerde, değerinin altında kalan ilanları listeleyerek kullanıcıyı “sadece bu ev” yerine “alternatif fırsatlar”a yönlendiriyor.
+
+- Gerçek dünya akışı: API tarafında snake_case, frontend tarafında camelCase + tip güvenliği ile stabil bir ürünleştirme kurgusu var; backend yoksa mock fallback ile demo/deneyim bozulmuyor.
+
+- UX tasarımımızın tamamen kullanıcılar tarafından rahatça kullanılabileceğine, hiçbir kafa karışıklığına sebep olmayacağına dair testlerimizi gerçekleştirdik. 
+========================================================================
+
+
+
+
+
+
+
+
