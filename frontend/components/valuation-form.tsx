@@ -345,10 +345,7 @@ export function ValuationForm() {
                     name="rooms"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="flex items-center gap-1">
-                          <DoorOpen className="w-3 h-3" />
-                          Oda Sayısı
-                        </FormLabel>
+                        <FormLabel>Oda Sayısı</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
@@ -374,10 +371,7 @@ export function ValuationForm() {
                     name="buildingAge"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          Bina Yaşı
-                        </FormLabel>
+                        <FormLabel>Bina Yaşı</FormLabel>
                         <FormControl>
                           <Input type="number" placeholder="5" {...field} />
                         </FormControl>
@@ -392,10 +386,7 @@ export function ValuationForm() {
                     name="status"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="flex items-center gap-1">
-                          <Home className="w-3 h-3" />
-                          Durum
-                        </FormLabel>
+                        <FormLabel>Durum</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
@@ -418,10 +409,7 @@ export function ValuationForm() {
                     name="floor"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="flex items-center gap-1">
-                          <Layers className="w-3 h-3" />
-                          Bulunduğu Kat
-                        </FormLabel>
+                        <FormLabel>Bulunduğu Kat</FormLabel>
                         <FormControl>
                           <Input type="number" placeholder="3" {...field} />
                         </FormControl>

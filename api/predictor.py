@@ -131,16 +131,20 @@ class HousePricePredictor:
         # Get region stats
         region_stats = self._get_region_stats(request.district, request.location)
         
+        # Round to nearest 1000 TL for cleaner display
+        def round_to_nearest_1000(value):
+            return round(value / 1000) * 1000
+        
         return {
-            "fair_value": round(fair_value, 0),
-            "fair_value_min": round(fair_value_min, 0),
-            "fair_value_max": round(fair_value_max, 0),
+            "fair_value": round_to_nearest_1000(fair_value),
+            "fair_value_min": round_to_nearest_1000(fair_value_min),
+            "fair_value_max": round_to_nearest_1000(fair_value_max),
             "advice": advice,
             "diff_percent": round(diff_percent, 2),
             "region_stats": region_stats,
             "confidence": {
-                "lower": round(fair_value_min, 0),
-                "upper": round(fair_value_max, 0)
+                "lower": round_to_nearest_1000(fair_value_min),
+                "upper": round_to_nearest_1000(fair_value_max)
             }
         }
     

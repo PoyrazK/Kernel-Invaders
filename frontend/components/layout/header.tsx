@@ -1,9 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 import { formatDate } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
 import logo from "@/assets/logo2.png";
+import logoDark from "@/assets/logodark.png";
 
 /**
  * Liquid Glass Header
@@ -12,6 +15,15 @@ import logo from "@/assets/logo2.png";
 
 export function Header() {
   const today = new Date();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const currentLogo = mounted && resolvedTheme === "dark" ? logoDark : logo;
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 px-4 pointer-events-none">
@@ -40,7 +52,7 @@ export function Header() {
                 {/* Center: Logo */}
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
                   <Image
-                    src={logo}
+                    src={currentLogo}
                     alt="Metrekare Logo"
                     width={64}
                     height={64}

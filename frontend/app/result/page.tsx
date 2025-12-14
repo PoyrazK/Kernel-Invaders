@@ -165,7 +165,7 @@ export default function ResultPage() {
       </Card>
 
       {/* Tab Navigation */}
-      <Tabs defaultValue="summary" className="space-y-6">
+      <Tabs defaultValue="summary" className="space-y-6 mt-6">
         <TabsList className="grid w-full grid-cols-5 h-auto p-1">
           <TabsTrigger value="summary" className="py-3">
             Özet
@@ -324,6 +324,9 @@ export default function ResultPage() {
                     subtitle: result.formData.neighborhood,
                   },
                 ]}
+                advice={result.advice}
+                fairValue={result.fairValue}
+                listingPrice={result.listingPrice}
               />
               <p className="text-xs text-muted-foreground">
                 Not: Mahalle bazlı koordinat olmadığından, harita işareti ilçe merkezini gösterir.

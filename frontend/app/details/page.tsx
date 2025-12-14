@@ -76,7 +76,7 @@ export default function DetailsPage() {
   ];
 
   return (
-    <PageContainer className="space-y-8">
+    <PageContainer className="space-y-16">
       {/* Üst Bar */}
       <div className="space-y-2">
         <Link href="/result">
@@ -106,7 +106,7 @@ export default function DetailsPage() {
       </Alert>
 
       {/* Özet Kartı */}
-      <Card className="border-2 border-zinc-200">
+      <Card className="border-2 border-zinc-200 mt-8">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calculator className="w-5 h-5 text-neon-blue" />
@@ -150,9 +150,32 @@ export default function DetailsPage() {
       </Card>
 
       {/* Güven Aralığı */}
-      {result.confidence && (
-        <Card className="border-2 border-zinc-200">
-          <CardHeader>
+      {result.confidence && (() => {
+        // Determine color based on advice
+        const barColor = result.advice === "FIRSAT" 
+          ? "from-emerald-500 to-emerald-400" 
+          : result.advice === "PAHALI" 
+            ? "from-red-500 to-red-400" 
+            : "from-amber-500 to-amber-400";
+        const dotColor = result.advice === "FIRSAT" 
+          ? "bg-emerald-500" 
+          : result.advice === "PAHALI" 
+            ? "bg-red-500" 
+            : "bg-amber-500";
+        const textColor = result.advice === "FIRSAT" 
+          ? "text-emerald-600 dark:text-emerald-400" 
+          : result.advice === "PAHALI" 
+            ? "text-red-600 dark:text-red-400" 
+            : "text-amber-600 dark:text-amber-400";
+        const badgeBg = result.advice === "FIRSAT" 
+          ? "bg-emerald-500/10 dark:bg-emerald-500/20" 
+          : result.advice === "PAHALI" 
+            ? "bg-red-500/10 dark:bg-red-500/20" 
+            : "bg-amber-500/10 dark:bg-amber-500/20";
+        
+        return (
+        <Card className="border-2 border-zinc-200 overflow-hidden mt-8">
+          <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-neon-green" />
               Güven Aralığı
@@ -161,61 +184,86 @@ export default function DetailsPage() {
               Model tahmininin %90 olasılıkla bulunacağı aralık
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {/* Görsel güven aralığı */}
-              <div className="relative h-16 bg-zinc-100 rounded-2xl overflow-hidden">
-                {/* Alt ve üst sınır çizgileri */}
-                <div className="absolute inset-y-0 left-0 w-1 bg-zinc-400" />
-                <div className="absolute inset-y-0 right-0 w-1 bg-zinc-400" />
+          <CardContent className="pt-4">
+            <div className="space-y-6">
+              {/* Gauge-style visualization */}
+              <div className="relative">
+                {/* Background arc representation */}
+                <div className="flex items-end justify-center gap-1 h-24">
+                  {/* Left bars - below estimate */}
+                  <div className="flex items-end gap-0.5">
+                    {[...Array(8)].map((_, i) => (
+                      <div
+                        key={`left-${i}`}
+                        className="w-3 sm:w-4 rounded-t-sm bg-gradient-to-t from-zinc-300 to-zinc-200 dark:from-zinc-700 dark:to-zinc-600"
+                        style={{ height: `${20 + i * 8}px` }}
+                      />
+                    ))}
+                  </div>
+                  
+                  {/* Center bar - the estimate */}
+                  <div className="relative">
+                    <div
+                      className={`w-4 sm:w-5 rounded-t-md bg-gradient-to-t ${barColor} shadow-lg`}
+                      style={{ height: '96px' }}
+                    />
+                    <div className={`absolute -top-2 left-1/2 -translate-x-1/2 w-3 h-3 ${dotColor} rounded-full border-2 border-white dark:border-zinc-900 shadow-md`} />
+                  </div>
+                  
+                  {/* Right bars - above estimate */}
+                  <div className="flex items-end gap-0.5">
+                    {[...Array(8)].map((_, i) => (
+                      <div
+                        key={`right-${i}`}
+                        className="w-3 sm:w-4 rounded-t-sm bg-gradient-to-t from-zinc-300 to-zinc-200 dark:from-zinc-700 dark:to-zinc-600"
+                        style={{ height: `${84 - i * 8}px` }}
+                      />
+                    ))}
+                  </div>
+                </div>
 
-                {/* Güven bandı */}
-                <div
-                  className="absolute inset-y-2 bg-neon-blue/30 rounded-xl"
-                  style={{
-                    left: "10%",
-                    right: "10%",
-                  }}
-                />
-
-                {/* Nokta tahmin */}
-                <div
-                  className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-neon-blue rounded-full border-2 border-white shadow-lg"
-                  style={{
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                  }}
-                />
+                {/* Labels underneath the gauge */}
+                <div className="flex justify-between items-start mt-4 px-2">
+                  <div className="text-center flex-1">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Alt Sınır</p>
+                    <p className="text-sm sm:text-base font-bold text-foreground mt-1">
+                      {formatCurrency(result.confidence.lower)}
+                    </p>
+                  </div>
+                  <div className="text-center flex-1 -mt-2">
+                    <div className={`inline-flex items-center gap-1 ${badgeBg} px-3 py-1 rounded-full`}>
+                      <div className={`w-2 h-2 rounded-full ${dotColor}`} />
+                      <span className={`text-xs font-semibold ${textColor}`}>TAHMİN</span>
+                    </div>
+                    <p className={`text-lg sm:text-xl font-bold ${textColor} mt-1`}>
+                      {formatCurrency(result.fairValue)}
+                    </p>
+                  </div>
+                  <div className="text-center flex-1">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Üst Sınır</p>
+                    <p className="text-sm sm:text-base font-bold text-foreground mt-1">
+                      {formatCurrency(result.confidence.upper)}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              {/* Değerler */}
-              <div className="flex justify-between text-sm">
-                <div className="text-left">
-                  <p className="text-zinc-500">Alt Sınır</p>
-                  <p className="font-bold text-zinc-900">
-                    {formatCurrency(result.confidence.lower)}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <p className="text-zinc-500">Tahmin</p>
-                  <p className="font-bold text-neon-blue">
-                    {formatCurrency(result.fairValue)}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-zinc-500">Üst Sınır</p>
-                  <p className="font-bold text-zinc-900">
-                    {formatCurrency(result.confidence.upper)}
-                  </p>
-                </div>
+              {/* Info box */}
+              <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-xl">
+                <Info className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Gerçek piyasa değerinin bu aralıkta olma olasılığı <span className="font-semibold text-foreground">%90</span>'dır. 
+                  Aralık genişliği, tahmin belirsizliğini yansıtır.
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
-      )}
+        );
+      })()}
 
       {/* Kullanılan Değişkenler */}
-      <Card className="border-2 border-zinc-200">
+      <Card className="border-2 border-zinc-200 overflow-hidden mt-8">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-neon-yellow" />
@@ -226,40 +274,75 @@ export default function DetailsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {variables.map((variable, index) => (
-              <div
-                key={variable.name}
-                className="flex items-center justify-between p-3 bg-zinc-50 rounded-xl"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-zinc-200 rounded-lg flex items-center justify-center text-sm font-bold text-zinc-600">
-                    {index + 1}
+          <div className="space-y-4">
+            {variables.map((variable) => {
+              const impactPercent = variable.weight === "Yüksek" ? 90 : variable.weight === "Orta" ? 60 : 30;
+              const impactColor = variable.weight === "Yüksek" 
+                ? "bg-emerald-500" 
+                : variable.weight === "Orta" 
+                  ? "bg-amber-500" 
+                  : "bg-zinc-400";
+              const impactBgColor = variable.weight === "Yüksek" 
+                ? "bg-emerald-500/10" 
+                : variable.weight === "Orta" 
+                  ? "bg-amber-500/10" 
+                  : "bg-zinc-500/10";
+              
+              return (
+                <div
+                  key={variable.name}
+                  className="group"
+                >
+                  {/* Header row */}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-foreground">{variable.name}</span>
+                      <span className="text-sm text-muted-foreground">•</span>
+                      <span className="text-sm text-muted-foreground">{variable.value}</span>
+                    </div>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${impactBgColor} ${
+                      variable.weight === "Yüksek" 
+                        ? "text-emerald-700 dark:text-emerald-400" 
+                        : variable.weight === "Orta" 
+                          ? "text-amber-700 dark:text-amber-400" 
+                          : "text-zinc-600 dark:text-zinc-400"
+                    }`}>
+                      {variable.weight}
+                    </span>
                   </div>
-                  <div>
-                    <p className="font-semibold text-zinc-900">{variable.name}</p>
-                    <p className="text-sm text-zinc-500">{variable.value}</p>
+                  
+                  {/* Impact bar */}
+                  <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className={`absolute inset-y-0 left-0 ${impactColor} rounded-full transition-all duration-500 ease-out`}
+                      style={{ width: `${impactPercent}%` }}
+                    />
                   </div>
                 </div>
-                <Badge
-                  variant={
-                    variable.weight === "Yüksek"
-                      ? "success"
-                      : variable.weight === "Orta"
-                        ? "warning"
-                        : "secondary"
-                  }
-                >
-                  {variable.weight} Etki
-                </Badge>
-              </div>
-            ))}
+              );
+            })}
+          </div>
+          
+          {/* Legend */}
+          <div className="flex items-center justify-center gap-6 mt-6 pt-4 border-t border-border">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-emerald-500" />
+              <span className="text-xs text-muted-foreground">Yüksek Etki</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-amber-500" />
+              <span className="text-xs text-muted-foreground">Orta Etki</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-zinc-400" />
+              <span className="text-xs text-muted-foreground">Düşük Etki</span>
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Model Varsayımları */}
-      <Card className="border-2 border-zinc-200">
+      <Card className="border-2 border-zinc-200 mt-8">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-neon-pink" />

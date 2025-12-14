@@ -25,7 +25,7 @@ export default function AnalyzePage() {
       </div>
 
       {/* Bilgi Notu */}
-      <Alert variant="info">
+      <Alert variant="info" className="mb-4">
         <Info className="h-4 w-4" />
         <AlertTitle>İpucu</AlertTitle>
         <AlertDescription>

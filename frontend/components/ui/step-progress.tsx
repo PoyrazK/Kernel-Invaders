@@ -21,8 +21,8 @@ interface StepProgressProps {
 
 export function StepProgress({ steps, currentStep }: StepProgressProps) {
   return (
-    <div className="w-full py-6">
-      <div className="flex items-center justify-between">
+    <div className="w-full py-6 mb-4">
+      <div className="flex items-start justify-center">
         {steps.map((step, index) => {
           const stepNumber = index + 1;
           const isCompleted = stepNumber < currentStep;
@@ -30,9 +30,9 @@ export function StepProgress({ steps, currentStep }: StepProgressProps) {
           const isUpcoming = stepNumber > currentStep;
 
           return (
-            <div key={step.id} className="flex items-center flex-1">
-              {/* Step Circle */}
-              <div className="flex flex-col items-center">
+            <div key={step.id} className="flex items-center">
+              {/* Step Circle + Label */}
+              <div className="flex flex-col items-center min-w-[80px]">
                 <div
                   className={cn(
                     "w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-300",
@@ -71,7 +71,7 @@ export function StepProgress({ steps, currentStep }: StepProgressProps) {
               {index < steps.length - 1 && (
                 <div
                   className={cn(
-                    "flex-1 h-0.5 mx-2 transition-colors duration-300",
+                    "w-12 sm:w-16 h-0.5 mx-1 mt-[-2rem] transition-colors duration-300",
                     isCompleted ? "bg-primary" : "bg-muted"
                   )}
                 />

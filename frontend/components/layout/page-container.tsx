@@ -19,8 +19,8 @@ export function PageContainer({
   return (
     <main
       className={cn(
-        "min-h-screen pb-24 pt-28", // Header için üst padding + Alt navigasyon için alt padding
-        !noPadding && "px-4 py-6",
+        "min-h-screen pb-36 pt-32", // Floating header için üst padding + Floating bottom nav için alt padding
+        !noPadding && "px-4",
         className
       )}
     >
