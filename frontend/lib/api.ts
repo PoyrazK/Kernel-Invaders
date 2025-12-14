@@ -1,4 +1,8 @@
 import { PredictRequest, PredictResponse, ValuationFormData, ValuationResult, OpportunitiesRequest, OpportunitiesResponse, OpportunityItem } from "./types";
+import { ISTANBUL_DISTRICTS } from "./districts-data";
+
+// Re-export for backward compatibility
+export { ISTANBUL_DISTRICTS };
 
 // API base URL - production'da environment variable'dan alınacak
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -198,82 +202,6 @@ function getLocationMultiplier(district: string): number {
 export function getDistricts() {
   return ISTANBUL_DISTRICTS;
 }
-
-/**
- * İstanbul ilçeleri ve mahalleleri
- */
-export const ISTANBUL_DISTRICTS = [
-  {
-    id: "kadikoy",
-    name: "Kadıköy",
-    neighborhoods: ["Caferağa", "Fenerbahçe", "Göztepe", "Koşuyolu", "Moda", "Suadiye", "Caddebostan", "Bostancı", "Erenköy", "Fikirtepe"],
-  },
-  {
-    id: "besiktas",
-    name: "Beşiktaş",
-    neighborhoods: ["Etiler", "Levent", "Bebek", "Ortaköy", "Arnavutköy", "Kuruçeşme", "Yıldız", "Akatlar", "Ulus", "Konaklar"],
-  },
-  {
-    id: "sisli",
-    name: "Şişli",
-    neighborhoods: ["Nişantaşı", "Teşvikiye", "Maçka", "Osmanbey", "Mecidiyeköy", "Esentepe", "Fulya", "Bomonti", "Halaskargazi"],
-  },
-  {
-    id: "sariyer",
-    name: "Sarıyer",
-    neighborhoods: ["Tarabya", "İstinye", "Emirgan", "Rumelihisarı", "Yeniköy", "Maslak", "Ayazağa", "Zekeriyaköy", "Bahçeköy"],
-  },
-  {
-    id: "bakirkoy",
-    name: "Bakırköy",
-    neighborhoods: ["Ataköy", "Yeşilköy", "Florya", "Bahçelievler", "Şenlik", "Zeytinlik", "Osmaniye", "Kartaltepe"],
-  },
-  {
-    id: "atasehir",
-    name: "Ataşehir",
-    neighborhoods: ["Ataşehir", "İçerenköy", "Küçükbakkalköy", "Kayışdağı", "Yenisahra", "Barbaros", "Ferhatpaşa"],
-  },
-  {
-    id: "uskudar",
-    name: "Üsküdar",
-    neighborhoods: ["Acıbadem", "Altunizade", "Beylerbeyi", "Çengelköy", "Kuzguncuk", "Kandilli", "Ünalan", "Yavuztürk"],
-  },
-  {
-    id: "maltepe",
-    name: "Maltepe",
-    neighborhoods: ["Altayçeşme", "Cevizli", "Girne", "İdealtepe", "Küçükyalı", "Zümrütevler", "Bağlarbaşı"],
-  },
-  {
-    id: "kartal",
-    name: "Kartal",
-    neighborhoods: ["Soğanlık", "Yakacık", "Kordonboyu", "Uğur Mumcu", "Hürriyet", "Atalar", "Cevizli"],
-  },
-  {
-    id: "pendik",
-    name: "Pendik",
-    neighborhoods: ["Kaynarca", "Yenişehir", "Kurtköy", "Güzelyalı", "Esenyalı", "Fevzi Çakmak", "Bahçelievler"],
-  },
-  {
-    id: "beylikduzu",
-    name: "Beylikdüzü",
-    neighborhoods: ["Adnan Kahveci", "Barış", "Büyükşehir", "Cumhuriyet", "Kavakli", "Yakuplu", "Gürpınar"],
-  },
-  {
-    id: "esenyurt",
-    name: "Esenyurt",
-    neighborhoods: ["Fatih", "Yeşilkent", "Saadetdere", "İncirtepe", "Mehterçeşme", "Pınar", "Ardıçlı"],
-  },
-  {
-    id: "basaksehir",
-    name: "Başakşehir",
-    neighborhoods: ["Başakşehir", "Bahçeşehir", "Kayabaşı", "Altınşehir", "Güvercintepe", "Ziya Gökalp"],
-  },
-  {
-    id: "kucukcekmece",
-    name: "Küçükçekmece",
-    neighborhoods: ["Atakent", "Cennet", "Halkalı", "Sefaköy", "Söğütlüçeşme", "İnönü", "Cumhuriyet"],
-  },
-];
 
 /**
  * Oda sayısı seçenekleri

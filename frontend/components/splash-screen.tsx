@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 /**
  * Splash Screen
@@ -12,8 +12,12 @@ import { useState, useEffect } from "react";
 export function SplashScreen({ onComplete }: { onComplete: () => void }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFading, setIsFading] = useState(false);
+  const completedRef = useRef(false);
 
   useEffect(() => {
+    // Prevent double execution
+    if (completedRef.current) return;
+
     // Start expansion animation after a short delay
     const expandTimer = setTimeout(() => {
       setIsExpanded(true);
@@ -26,7 +30,10 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
 
     // Complete and unmount
     const completeTimer = setTimeout(() => {
-      onComplete();
+      if (!completedRef.current) {
+        completedRef.current = true;
+        onComplete();
+      }
     }, 2500);
 
     return () => {

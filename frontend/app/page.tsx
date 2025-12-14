@@ -43,9 +43,9 @@ const features = [
 
 // İstatistikler
 const stats = [
-  { value: "50K+", label: "Analiz Edilen İlan" },
-  { value: "14", label: "İlçe Kapsamı" },
-  { value: "%92", label: "Tahmin Doğruluğu" },
+  { value: "27K+", label: "Analiz Edilen İlan" },
+  { value: "39", label: "İlçe Kapsamı" },
+  { value: "%96", label: "Tahmin Doğruluğu" },
   { value: "2sn", label: "Sonuç Süresi" },
 ];
 

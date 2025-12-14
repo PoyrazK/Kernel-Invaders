@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/layout/header";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { SplashScreen } from "@/components/splash-screen";
@@ -12,26 +12,46 @@ import { TooltipProvider } from "@/components/ui/tooltip";
  */
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState<boolean | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     
+    // Check if this is the first visit ever (not just session)
+    const hasVisited = localStorage.getItem("hasVisitedBefore");
+    
+    if (!hasVisited) {
+      // First time visitor - mark as visited and reload
+      localStorage.setItem("hasVisitedBefore", "true");
+      window.location.reload();
+      return;
+    }
+    
     // Check if splash was already shown in this session
     const splashShown = sessionStorage.getItem("splashShown");
-    if (splashShown) {
-      setShowSplash(false);
-    }
+    setShowSplash(!splashShown);
   }, []);
 
-  const handleSplashComplete = () => {
+  const handleSplashComplete = useCallback(() => {
     setShowSplash(false);
     sessionStorage.setItem("splashShown", "true");
-  };
+  }, []);
 
-  // Show a minimal loading state instead of null to prevent blank screen
-  if (!mounted) {
+  // Fallback: If splash doesn't complete in 5 seconds, force hide it
+  useEffect(() => {
+    if (showSplash === true) {
+      const fallbackTimer = setTimeout(() => {
+        console.warn("Splash screen fallback triggered");
+        handleSplashComplete();
+      }, 5000);
+      
+      return () => clearTimeout(fallbackTimer);
+    }
+  }, [showSplash, handleSplashComplete]);
+
+  // Show a minimal loading state while checking sessionStorage
+  if (!mounted || showSplash === null) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse">

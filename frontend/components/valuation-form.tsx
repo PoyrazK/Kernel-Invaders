@@ -59,6 +59,9 @@ const formSchema = z.object({
     .number()
     .min(100000, "Minimum fiyat 100.000 ₺ olmalıdır")
     .max(100000000, "Maksimum fiyat 100.000.000 ₺ olabilir"),
+}).refine((data) => data.floor <= data.totalFloors, {
+  message: "Bulunduğunuz kat, toplam kat sayısından büyük olamaz",
+  path: ["floor"],
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -411,7 +414,22 @@ export function ValuationForm() {
                       <FormItem>
                         <FormLabel>Bulunduğu Kat</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="3" {...field} />
+                          <Input 
+                            type="number" 
+                            placeholder="3" 
+                            {...field}
+                            max={form.watch("totalFloors")}
+                            onChange={(e) => {
+                              const value = Number(e.target.value);
+                              const totalFloors = form.getValues("totalFloors");
+                              // Eğer girilen kat toplam kattan büyükse, toplam kata eşitle
+                              if (value > totalFloors) {
+                                field.onChange(totalFloors);
+                              } else {
+                                field.onChange(value);
+                              }
+                            }}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -426,7 +444,20 @@ export function ValuationForm() {
                       <FormItem>
                         <FormLabel>Toplam Kat Sayısı</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="10" {...field} />
+                          <Input 
+                            type="number" 
+                            placeholder="10" 
+                            {...field}
+                            onChange={(e) => {
+                              const value = Number(e.target.value);
+                              field.onChange(value);
+                              // Eğer mevcut kat yeni toplam kattan büyükse, düşür
+                              const currentFloor = form.getValues("floor");
+                              if (currentFloor > value) {
+                                form.setValue("floor", value);
+                              }
+                            }}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

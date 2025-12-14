@@ -56,14 +56,14 @@ const teamMembers = [
 // Neden Metrekare?
 const whyMetrekare = [
   {
-    title: "23.000+ Gerçek Veri",
+    title: "27.000+ Gerçek Veri",
     description:
-      "Modelimiz İstanbul'daki 23.000'den fazla gerçek emlak ilanı verisiyle eğitildi. Sahte veya tahmini veri yok, sadece piyasadan toplanan güncel veriler.",
+      "Modelimiz İstanbul'daki 27.000'den fazla gerçek emlak ilanı verisiyle eğitildi. Sahte veya tahmini veri yok, sadece piyasadan toplanan güncel veriler.",
   },
   {
     title: "LightGBM Makine Öğrenmesi",
     description:
-      "Gradient boosting tabanlı LightGBM algoritması kullanıyoruz. Bu model, karmaşık fiyat ilişkilerini yakalayarak %92+ doğruluk oranı sağlıyor.",
+      "Gradient boosting tabanlı LightGBM algoritması kullanıyoruz. Bu model, karmaşık fiyat ilişkilerini yakalayarak %96 doğruluk oranı sağlıyor.",
   },
   {
     title: "Bölgesel Fiyat Analizi",
