@@ -260,6 +260,23 @@ Aralık tahminlerini kullanarak daha net bir fırsat skoru sunar.
    - Frontend: Next.js 14, React 18, TailwindCSS, shadcn/ui
    - DevOps: Docker, Docker Compose
 
+------------------------------------------------------------------------
+8. TEST MEKANİZMASI (Test Mechanism)
+------------------------------------------------------------------------
+Projemiz, jüri üyelerinin veya geliştiricilerin modeli harici veri setleri 
+üzerinde kolayca test edebilmesi için bir test betiği içerir.
+
+Script: tests/calculate_metrics.py
+
+Kullanım:
+   python3 tests/calculate_metrics.py --data_path <dosya_yolu.csv>
+
+Özellikler:
+   - Verilen CSV dosyasını otomatik olarak temizler (Outlier, Null check).
+   - Eğitimde kullanılan ön işleme adımlarını birebir uygular.
+   - Eğitilmiş modeli kullanarak R² Score ve RMSE değerlerini hesaplar.
+   - Sonuçları terminal ekranına net bir şekilde yazdırır.
+
 ========================================================================
 
 

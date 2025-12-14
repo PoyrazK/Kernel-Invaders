@@ -147,6 +147,19 @@ Model ±5% güven aralığı ile tahmin yapar:
 - **Frontend**: Next.js 14, React 18, TailwindCSS, shadcn/ui, Recharts
 - **DevOps**: Docker, Docker Compose
 
+## 🧪 Test Mekanizması
+
+Modelin performansını harici veri setleri üzerinde test etmek için geliştirilmiş bir araç bulunmaktadır.
+
+**Kullanım:**
+```bash
+python3 tests/calculate_metrics.py --data_path <veri_dosyasi_yolu.csv>
+```
+
+**Özellikler:**
+- Verilen CSV dosyasını okur ve temizler (Outlier temizliği dahil)
+- Eğitilmiş modeli kullanarak R² Score ve RMSE metriklerini hesaplar
+
 ## 📄 Lisans
 
 Bu proje AI Spark Hackathon 2025 için geliştirilmiştir.
