@@ -7,9 +7,9 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 
-# Add parent directory to path for target_encoder module
+# Add parent directory to path for encoder module
 sys.path.insert(0, str(Path(__file__).parent.parent))
-import target_encoder  # noqa: F401 - needed for pickle
+import encoder  # noqa: F401 - needed for pickle
 
 
 class HousePricePredictor:
@@ -45,9 +45,7 @@ class HousePricePredictor:
             # Fallback to versioned names
             model_path = models_dir / "model_lightgbm_tuned_v3.pkl"
         
-        encoder_path = models_dir / "target_encoder.pkl"
-        if not encoder_path.exists():
-            encoder_path = models_dir / "target_encoder_v3.pkl"
+        encoder_path = models_dir / "encoder.pkl"
         
         # Load model
         if model_path.exists():

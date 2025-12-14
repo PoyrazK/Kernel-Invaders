@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-class TargetEncoder:
+class Optimization:
     def __init__(self, cols=None, target_col='Price'):
         self.cols = cols
         self.target_col = target_col

@@ -23,7 +23,7 @@ Kernel-Invaiders/
 │   └── processed_data.pkl
 ├── models/                # Eğitilmiş modeller
 │   ├── model.pkl          # LightGBM Regressor (R²: 0.8115)
-│   └── target_encoder.pkl # Target Encoder
+│   └── encoder.pkl        # Encoder
 ├── notebooks/             # Eğitim notebook'ları
 │   └── model_training.ipynb
 ├── api/                   # FastAPI Backend
