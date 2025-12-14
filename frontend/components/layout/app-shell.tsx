@@ -12,25 +12,20 @@ import { TooltipProvider } from "@/components/ui/tooltip";
  */
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const [showSplash, setShowSplash] = useState<boolean | null>(null);
+  const [showSplash, setShowSplash] = useState<boolean>(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     
-    // Check if this is the first visit ever (not just session)
-    const hasVisited = localStorage.getItem("hasVisitedBefore");
-    
-    if (!hasVisited) {
-      // First time visitor - mark as visited and reload
-      localStorage.setItem("hasVisitedBefore", "true");
-      window.location.reload();
-      return;
-    }
-    
     // Check if splash was already shown in this session
     const splashShown = sessionStorage.getItem("splashShown");
-    setShowSplash(!splashShown);
+    
+    if (!splashShown) {
+      setShowSplash(true);
+    } else {
+      setShowSplash(false);
+    }
   }, []);
 
   const handleSplashComplete = useCallback(() => {
@@ -51,7 +46,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [showSplash, handleSplashComplete]);
 
   // Show a minimal loading state while checking sessionStorage
-  if (!mounted || showSplash === null) {
+  if (!mounted) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse">
