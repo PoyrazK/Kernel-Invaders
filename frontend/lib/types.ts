@@ -122,3 +122,28 @@ export interface OpportunitiesResponse {
   totalFound: number;
 }
 
+// Sıralama alanları
+export type SortField = 
+  | "timestamp" 
+  | "listingPrice" 
+  | "fairValue" 
+  | "squareMeters" 
+  | "district" 
+  | "diffPercent" 
+  | "advice";
+
+// Sıralama yönü
+export type SortDirection = "asc" | "desc";
+
+// Sıralama seçeneği
+export interface SortOption {
+  id: string;
+  field: SortField;
+  direction: SortDirection;
+  label: string;
+}
+
+// Kaydedilmiş değerleme sonucu (localStorage'da kullanılan)
+export interface SavedValuationResult extends ValuationResult {
+  id: string;
+}

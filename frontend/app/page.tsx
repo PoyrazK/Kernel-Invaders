@@ -5,6 +5,7 @@ import { ArrowRight, LineChart, Scale, TrendingUp, Sparkles } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageContainer } from "@/components/layout/page-container";
+import { QuoteBanner, TestimonialsSection } from "@/components/quotes";
 import { cn } from "@/lib/utils";
 
 /**
@@ -216,6 +217,14 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Motivasyonel Alıntı Banner */}
+      <section className="py-8">
+        <QuoteBanner />
+      </section>
+
+      {/* Kullanıcı Yorumları */}
+      <TestimonialsSection />
 
       {/* Son CTA */}
       <section className="py-12">

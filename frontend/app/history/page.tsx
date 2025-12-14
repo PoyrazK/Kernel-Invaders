@@ -17,7 +17,9 @@ import {
   saveHistory,
   type SavedValuationResult,
 } from "@/lib/storage";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency, sortHistory, SORT_OPTIONS } from "@/lib/utils";
+import { SortDropdown } from "@/components/sort-dropdown";
+import { SortOption } from "@/lib/types";
 
 /**
  * Geçmiş Değerlemeler Sayfası
@@ -28,6 +30,7 @@ export default function HistoryPage() {
   const router = useRouter();
   const [items, setItems] = useState<SavedValuationResult[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [sortOptionId, setSortOptionId] = useState<string>("timestamp-desc");
 
   const getAdviceColor = (advice: string) => {
     switch (advice) {
@@ -44,6 +47,16 @@ export default function HistoryPage() {
     setItems(loadHistory());
     setSelectedIds(loadCompareSelection());
   }, []);
+
+  // Sıralama uygula
+  const sortedItems = useMemo(() => {
+    const option = SORT_OPTIONS.find((opt) => opt.id === sortOptionId) || SORT_OPTIONS[0];
+    return sortHistory(items as any, option.field, option.direction);
+  }, [items, sortOptionId]);
+
+  const handleSortChange = (option: SortOption) => {
+    setSortOptionId(option.id);
+  };
 
   const selectedCount = selectedIds.length;
 
@@ -85,6 +98,8 @@ export default function HistoryPage() {
       {
         id: "demo-1",
         fairValue: 8500000,
+        fairValueMin: 7700000,
+        fairValueMax: 9300000,
         listingPrice: 7200000,
         diffPercent: ((7200000 - 8500000) / 8500000) * 100,
         advice: "FIRSAT",
@@ -112,6 +127,8 @@ export default function HistoryPage() {
       {
         id: "demo-2",
         fairValue: 12000000,
+        fairValueMin: 10800000,
+        fairValueMax: 13200000,
         listingPrice: 14500000,
         diffPercent: ((14500000 - 12000000) / 12000000) * 100,
         advice: "PAHALI",
@@ -139,6 +156,8 @@ export default function HistoryPage() {
       {
         id: "demo-3",
         fairValue: 18000000,
+        fairValueMin: 16200000,
+        fairValueMax: 19800000,
         listingPrice: 17800000,
         diffPercent: ((17800000 - 18000000) / 18000000) * 100,
         advice: "NORMAL",
@@ -200,9 +219,22 @@ export default function HistoryPage() {
         </div>
       </div>
 
+      {/* Sıralama ve sayı */}
+      {items.length > 0 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            {sortedItems.length} değerleme
+          </p>
+          <SortDropdown
+            value={sortOptionId}
+            onChange={handleSortChange}
+          />
+        </div>
+      )}
+
       {/* Liste */}
       <div className="space-y-4">
-        {items.map((item) => (
+        {sortedItems.map((item) => (
           <Card
             key={item.id}
             className={cn(

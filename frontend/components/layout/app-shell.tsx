@@ -30,9 +30,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     sessionStorage.setItem("splashShown", "true");
   };
 
-  // Prevent hydration mismatch
+  // Show a minimal loading state instead of null to prevent blank screen
   if (!mounted) {
-    return null;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse">
+          <span className="text-4xl font-semibold text-foreground">m</span>
+          <span className="text-2xl text-muted-foreground align-super">²</span>
+        </div>
+      </div>
+    );
   }
 
   return (

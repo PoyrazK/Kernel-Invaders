@@ -17,17 +17,17 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
     // Start expansion animation after a short delay
     const expandTimer = setTimeout(() => {
       setIsExpanded(true);
-    }, 800);
+    }, 400);
 
     // Start fade out after animation completes
     const fadeTimer = setTimeout(() => {
       setIsFading(true);
-    }, 3500);
+    }, 2000);
 
     // Complete and unmount
     const completeTimer = setTimeout(() => {
       onComplete();
-    }, 4200);
+    }, 2500);
 
     return () => {
       clearTimeout(expandTimer);

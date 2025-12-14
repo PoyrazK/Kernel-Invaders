@@ -1,6 +1,9 @@
+"use client";
+
 import { PageContainer } from "@/components/layout/page-container";
 import { ValuationForm } from "@/components/valuation-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { TipCard } from "@/components/quotes";
 import { Info } from "lucide-react";
 
 /**
@@ -8,18 +11,13 @@ import { Info } from "lucide-react";
  * Konut bilgilerini girmek için form
  */
 
-export const metadata = {
-  title: "Değerleme | Metrekare",
-  description: "Konutunuzun adil piyasa değerini hesaplayın",
-};
-
 export default function AnalyzePage() {
   return (
     <PageContainer className="space-y-6">
       {/* Sayfa Başlığı */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-zinc-900">Değerleme Yap</h1>
-        <p className="text-zinc-500">
+        <h1 className="text-3xl font-bold text-foreground">Değerleme Yap</h1>
+        <p className="text-muted-foreground">
           Analiz etmek istediğiniz konutun bilgilerini girin
         </p>
       </div>
@@ -36,6 +34,9 @@ export default function AnalyzePage() {
 
       {/* Form */}
       <ValuationForm />
+
+      {/* Eğitici İpucu */}
+      <TipCard autoRotate rotateInterval={12000} />
     </PageContainer>
   );
 }
